@@ -352,3 +352,7 @@ MigrationBackup/
 # Unreal Engine specific
 Intermediate/*
 Saved/
+Binaries/
+# Ignore specific folders inside Plugins
+Plugins/**/Intermediate/*
+Plugins/**/Binaries/*
