@@ -4,19 +4,18 @@
 
 #include "CoreMinimal.h"
 #include "Blueprint/UserWidget.h"
-#include "InventoryRootWidget.generated.h"
+#include "CommonActivatableWidget.h"
+#include "InventoryRootWidgetActivatable.generated.h"
 
 /**
  * 
  */
 UCLASS()
-class UE5POCKETWORLDS_API UInventoryRootWidget : public UUserWidget
+class UE5POCKETWORLDS_API UInventoryRootWidgetActivatable : public UCommonActivatableWidget
 {
 	GENERATED_BODY()
 	
 public:
 	void NativeConstruct() override;
-
-	void CloseRootWidget();
 };
 

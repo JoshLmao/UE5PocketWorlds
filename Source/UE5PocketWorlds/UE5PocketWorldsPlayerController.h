@@ -21,6 +21,8 @@ public:
 
 	void ToggleInventory(bool open);
 
+	void ReceivedPlayer() override;
+
 protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	UPlayerInventoryComponent* InventoryComponent;

@@ -9,7 +9,7 @@
 // Sets default values for this component's properties
 UPlayerInventoryComponent::UPlayerInventoryComponent()
 {
-	static ConstructorHelpers::FClassFinder<UUserWidget> CustomRootInventoryWidget(TEXT("/Game/PocketWorlds/UI/Inventory/WBP_InventoryRootWidget"));
+	static ConstructorHelpers::FClassFinder<UUserWidget> CustomRootInventoryWidget(TEXT("/Game/PocketWorlds/UI/Inventory/WBP_InventoryRoot_Activatable"));
 	InventoryRootWidget = CustomRootInventoryWidget.Class;
 }
 
@@ -30,7 +30,7 @@ void UPlayerInventoryComponent::ToggleOpen(bool isOpen)
 			{
 				auto layer = FGameplayTag::RequestGameplayTag("UI.Layer.GameMenu");
 				primaryLayout->PushWidgetToLayerStack<UCommonActivatableWidget>(layer, InventoryRootWidget, [](UCommonActivatableWidget& Activatable) {
-					
+					UE_LOG(LogTemp, Log, TEXT("Activatable pushed to screen"));
 				});
 			}
 		}
