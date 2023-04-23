@@ -24,7 +24,7 @@ public:
 
 protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
-	TSubclassOf<class UUserWidget> InventoryRootWidget;
+	TSubclassOf<class UCommonActivatableWidget> InventoryRootWidget;
 
 private:
 	class UUserWidget* CreatedRoot;

@@ -4,6 +4,7 @@
 #include "PrimaryGameLayout.h"
 #include "GameFramework/PlayerController.h"
 #include <UE5PocketWorlds/Player/PocketWorldsLocalPlayer.h>
+#include "CommonActivatableWidget.h"
 
 // Sets default values for this component's properties
 UPlayerInventoryComponent::UPlayerInventoryComponent()
@@ -27,6 +28,10 @@ void UPlayerInventoryComponent::ToggleOpen(bool isOpen)
 		{
 			if (auto* primaryLayout = localPlayer->GetRootUILayout())
 			{
+				auto layer = FGameplayTag::RequestGameplayTag("UI.Layer.GameMenu");
+				primaryLayout->PushWidgetToLayerStack<UCommonActivatableWidget>(layer, InventoryRootWidget, [](UCommonActivatableWidget& Activatable) {
+					
+				});
 			}
 		}
 	}
