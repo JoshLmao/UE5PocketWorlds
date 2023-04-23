@@ -1,6 +1,9 @@
 
 #include "PlayerInventoryComponent.h"
 #include "Blueprint/UserWidget.h"
+#include "PrimaryGameLayout.h"
+#include "GameFramework/PlayerController.h"
+#include <UE5PocketWorlds/Player/PocketWorldsLocalPlayer.h>
 
 // Sets default values for this component's properties
 UPlayerInventoryComponent::UPlayerInventoryComponent()
@@ -9,12 +12,23 @@ UPlayerInventoryComponent::UPlayerInventoryComponent()
 	InventoryRootWidget = CustomRootInventoryWidget.Class;
 }
 
+void UPlayerInventoryComponent::BeginPlay()
+{
+	Super::BeginPlay();
+
+	OwningPlayerController = Cast<APlayerController>(GetOwner());
+}
+
 void UPlayerInventoryComponent::ToggleOpen(bool isOpen)
 {
 	if (isOpen)
 	{
-		CreatedRoot = CreateWidget<UUserWidget>(GetWorld(), InventoryRootWidget);
-		CreatedRoot->AddToViewport();
+		if (auto* localPlayer = Cast<UPocketWorldsLocalPlayer>(OwningPlayerController->GetLocalPlayer()))
+		{
+			if (auto* primaryLayout = localPlayer->GetRootUILayout())
+			{
+			}
+		}
 	}
 	else
 	{
@@ -24,3 +38,4 @@ void UPlayerInventoryComponent::ToggleOpen(bool isOpen)
 		}
 	}
 }
+

@@ -14,4 +14,9 @@ class UE5POCKETWORLDS_API UInventoryRootWidget : public UUserWidget
 {
 	GENERATED_BODY()
 	
+public:
+	void NativeConstruct() override;
+
+	void CloseRootWidget();
 };
+

@@ -9,10 +9,13 @@ public class UE5PocketWorlds : ModuleRules
         PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
 
         PublicDependencyModuleNames.AddRange(new string[] {
+            "CommonGame",
+            "CommonUI",
             "Core",
             "CoreUObject",
             "Engine",
             "EnhancedInput",
+            "GameplayTags",
             "HeadMountedDisplay",
             "InputCore",
             "UMG",

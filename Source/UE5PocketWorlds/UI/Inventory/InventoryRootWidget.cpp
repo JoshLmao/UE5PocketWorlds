@@ -3,3 +3,12 @@
 
 #include "InventoryRootWidget.h"
 
+void UInventoryRootWidget::NativeConstruct()
+{
+	//ListenForInputAction("", EInputEvent::IE_Released, true, &UInventoryRootWidget::CloseRootWidget);
+}
+
+void UInventoryRootWidget::CloseRootWidget()
+{
+
+}

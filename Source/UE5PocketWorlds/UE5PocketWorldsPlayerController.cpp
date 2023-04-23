@@ -12,4 +12,13 @@ AUE5PocketWorldsPlayerController::AUE5PocketWorldsPlayerController()
 void AUE5PocketWorldsPlayerController::ToggleInventory(bool open)
 {
 	InventoryComponent->ToggleOpen(open);
+
+	if (open) 
+	{
+		SetInputMode(FInputModeUIOnly());
+	}
+	else 
+	{
+		SetInputMode(FInputModeGameOnly());
+	}
 }

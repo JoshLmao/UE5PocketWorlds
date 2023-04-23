@@ -20,10 +20,14 @@ public:
 	// Toggle inventory screen open or closed
 	void ToggleOpen(bool isOpen);
 
+	void BeginPlay() override;
+
 protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	TSubclassOf<class UUserWidget> InventoryRootWidget;
 
 private:
 	class UUserWidget* CreatedRoot;
+
+	APlayerController* OwningPlayerController;
 };
