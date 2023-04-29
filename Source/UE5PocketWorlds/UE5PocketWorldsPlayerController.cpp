@@ -1,27 +1,28 @@
-// Fill out your copyright notice in the Description page of Project Settings.
-
-
 #include "UE5PocketWorldsPlayerController.h"
 #include "Component/PlayerInventoryComponent.h"
 #include "CommonLocalPlayer.h"
+#include "CommonUIExtensions.h"
+#include "UObject/ConstructorHelpers.h"
+#include "Blueprint/UserWidget.h"
 
 AUE5PocketWorldsPlayerController::AUE5PocketWorldsPlayerController()
 {
+	static ConstructorHelpers::FClassFinder<UUserWidget> CustomRootInventoryWidget(TEXT("/Game/PocketWorlds/UI/InGame/WBP_PlayerHUDLayout"));
+	PlayerHUDWidgetClass = CustomRootInventoryWidget.Class;
+
 	InventoryComponent = CreateDefaultSubobject<UPlayerInventoryComponent>(TEXT("Player Inventory Component"));
+}
+
+void AUE5PocketWorldsPlayerController::BeginPlay()
+{
+	Super::BeginPlay();
+
+	UCommonUIExtensions::PushContentToLayer_ForPlayer(GetLocalPlayer(), FGameplayTag::RequestGameplayTag("UI.Layer.Game"), PlayerHUDWidgetClass);
 }
 
 void AUE5PocketWorldsPlayerController::ToggleInventory(bool open)
 {
 	InventoryComponent->ToggleOpen(open);
-
-	if (open) 
-	{
-		SetInputMode(FInputModeUIOnly());
-	}
-	else 
-	{
-		SetInputMode(FInputModeGameOnly());
-	}
 }
 
 void AUE5PocketWorldsPlayerController::ReceivedPlayer()

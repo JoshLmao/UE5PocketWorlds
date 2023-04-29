@@ -4,16 +4,14 @@
 
 #include "CoreMinimal.h"
 #include "UE5PocketWorlds/UI/Foundation/FoundationBaseActivatable.h"
-#include "InventoryRootWidgetActivatable.generated.h"
+#include "PlayerHUDLayout.generated.h"
 
 /**
- * Root Activatable widget to contain inventory
+ * 
  */
-UCLASS(Abstract)
-class UE5POCKETWORLDS_API UInventoryRootWidgetActivatable : public UFoundationBaseActivatable
+UCLASS()
+class UE5POCKETWORLDS_API UPlayerHUDLayout : public UFoundationBaseActivatable
 {
 	GENERATED_BODY()
 	
-
 };
-

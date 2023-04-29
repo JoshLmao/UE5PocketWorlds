@@ -1,5 +1,3 @@
-// Fill out your copyright notice in the Description page of Project Settings.
-
 #pragma once
 
 #include "CoreMinimal.h"
@@ -19,6 +17,8 @@ class UE5POCKETWORLDS_API AUE5PocketWorldsPlayerController : public APlayerContr
 public:
 	AUE5PocketWorldsPlayerController();
 
+	void BeginPlay() override;
+
 	void ToggleInventory(bool open);
 
 	void ReceivedPlayer() override;
@@ -26,4 +26,6 @@ public:
 protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	UPlayerInventoryComponent* InventoryComponent;
+
+	TSubclassOf<class UCommonActivatableWidget> PlayerHUDWidgetClass;
 };
