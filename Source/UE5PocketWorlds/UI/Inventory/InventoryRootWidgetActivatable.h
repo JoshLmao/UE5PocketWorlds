@@ -3,7 +3,8 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "Blueprint/UserWidget.h"
+#include "Engine/DataTable.h"
+#include "Input/UIActionBindingHandle.h"
 #include "CommonActivatableWidget.h"
 #include "InventoryRootWidgetActivatable.generated.h"
 
@@ -16,6 +17,15 @@ class UE5POCKETWORLDS_API UInventoryRootWidgetActivatable : public UCommonActiva
 	GENERATED_BODY()
 	
 public:
-	void NativeConstruct() override;
+	void NativeOnInitialized() override;
+
+	UFUNCTION()
+	void HandleBackAction();
+
+protected:
+	UPROPERTY(EditDefaultsOnly)
+	FDataTableRowHandle BackInputActionData;
+		
+	FUIActionBindingHandle BackHandle;
 };
 

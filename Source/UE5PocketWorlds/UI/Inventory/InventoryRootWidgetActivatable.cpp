@@ -2,8 +2,19 @@
 
 
 #include "InventoryRootWidgetActivatable.h"
+#include "Containers/Array.h"
+#include "Delegates/Delegate.h"
+#include "Input/CommonUIInputTypes.h"
+#include "Templates/Casts.h"
 
-void UInventoryRootWidgetActivatable::NativeConstruct()
+#include UE_INLINE_GENERATED_CPP_BY_NAME(InventoryRootWidgetActivatable)
+
+void UInventoryRootWidgetActivatable::NativeOnInitialized()
 {
-	//ListenForInputAction("", EInputEvent::IE_Released, true, &UInventoryRootWidget::CloseRootWidget);
+	BackHandle = RegisterUIActionBinding(FBindUIActionArgs(BackInputActionData, true, FSimpleDelegate::CreateUObject(this, &UInventoryRootWidgetActivatable::HandleBackAction)));
+}
+
+void UInventoryRootWidgetActivatable::HandleBackAction()
+{
+	DeactivateWidget();
 }
