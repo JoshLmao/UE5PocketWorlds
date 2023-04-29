@@ -3,3 +3,9 @@
 
 #include "PlayerHUDLayout.h"
 
+UPlayerHUDLayout::UPlayerHUDLayout()
+{
+	bIsBackHandler = false;
+	InputConfig = ELyraWidgetInputMode::Game;
+	GameMouseCaptureMode = EMouseCaptureMode::CapturePermanently;
+}

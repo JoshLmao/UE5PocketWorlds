@@ -14,4 +14,6 @@ class UE5POCKETWORLDS_API UPlayerHUDLayout : public UFoundationBaseActivatable
 {
 	GENERATED_BODY()
 	
+public:
+	UPlayerHUDLayout();
 };
