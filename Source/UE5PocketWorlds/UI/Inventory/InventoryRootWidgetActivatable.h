@@ -13,7 +13,7 @@ UCLASS(Abstract)
 class UE5POCKETWORLDS_API UInventoryRootWidgetActivatable : public UFoundationBaseActivatable
 {
 	GENERATED_BODY()
-	
 
+	UInventoryRootWidgetActivatable();
 };
 

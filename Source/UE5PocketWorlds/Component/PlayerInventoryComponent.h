@@ -17,17 +17,23 @@ public:
 	// Sets default values for this component's properties
 	UPlayerInventoryComponent();
 
-	// Toggle inventory screen open or closed
-	void ToggleOpen(bool isOpen);
+	// Opens in inventory to the screen of the player. Returns true if opened successfully
+	bool Open();
 
 	void BeginPlay() override;
 
 protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
-	TSubclassOf<class UCommonActivatableWidget> InventoryRootWidget;
+	TSubclassOf<class UFoundationBaseActivatable> InventoryRootWidget;
 
 private:
-	class UUserWidget* CreatedRoot;
+	class UFoundationBaseActivatable* CreatedRoot;
 
 	APlayerController* OwningPlayerController;
+
+	// Handle listening to Inventory OnDeactivated
+	FDelegateHandle InventoryDeactivatedHandle;
+
+	UFUNCTION()
+	void OnInventoryClosed();
 };

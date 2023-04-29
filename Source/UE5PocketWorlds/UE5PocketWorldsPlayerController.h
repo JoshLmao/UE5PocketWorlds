@@ -27,5 +27,5 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	UPlayerInventoryComponent* InventoryComponent;
 
-	TSubclassOf<class UCommonActivatableWidget> PlayerHUDWidgetClass;
+	TSubclassOf<class UFoundationBaseActivatable> PlayerHUDWidgetClass;
 };

@@ -1,4 +1,3 @@
-
 #include "PlayerInventoryComponent.h"
 #include "Blueprint/UserWidget.h"
 #include "PrimaryGameLayout.h"
@@ -6,11 +5,13 @@
 #include <UE5PocketWorlds/Player/PocketWorldsLocalPlayer.h>
 #include "CommonActivatableWidget.h"
 #include "UObject/ConstructorHelpers.h"
+#include "UE5PocketWorlds/UI/Foundation/FoundationBaseActivatable.h"
+#include "UE5PocketWorlds/UE5PocketWorlds.h"
 
 // Sets default values for this component's properties
 UPlayerInventoryComponent::UPlayerInventoryComponent()
 {
-	static ConstructorHelpers::FClassFinder<UUserWidget> CustomRootInventoryWidget(TEXT("/Game/PocketWorlds/UI/Inventory/WBP_InventoryRoot_Activatable"));
+	static ConstructorHelpers::FClassFinder<UFoundationBaseActivatable> CustomRootInventoryWidget(TEXT("/Game/PocketWorlds/UI/Inventory/WBP_InventoryRoot_Activatable"));
 	InventoryRootWidget = CustomRootInventoryWidget.Class;
 }
 
@@ -21,27 +22,31 @@ void UPlayerInventoryComponent::BeginPlay()
 	OwningPlayerController = Cast<APlayerController>(GetOwner());
 }
 
-void UPlayerInventoryComponent::ToggleOpen(bool isOpen)
+bool UPlayerInventoryComponent::Open()
 {
-	if (isOpen)
+	if (CreatedRoot != nullptr)
 	{
-		if (auto* localPlayer = Cast<UPocketWorldsLocalPlayer>(OwningPlayerController->GetLocalPlayer()))
+		return false;
+	}
+
+	if (auto* localPlayer = Cast<UPocketWorldsLocalPlayer>(OwningPlayerController->GetLocalPlayer()))
+	{
+		if (auto* primaryLayout = localPlayer->GetRootUILayout())
 		{
-			if (auto* primaryLayout = localPlayer->GetRootUILayout())
-			{
-				auto layer = FGameplayTag::RequestGameplayTag("UI.Layer.GameMenu");
-				primaryLayout->PushWidgetToLayerStack<UCommonActivatableWidget>(layer, InventoryRootWidget, [](UCommonActivatableWidget& Activatable) {
-					UE_LOG(LogTemp, Log, TEXT("Activatable pushed to screen"));
-				});
-			}
+			auto layer = FGameplayTag::RequestGameplayTag("UI.Layer.GameMenu");
+			CreatedRoot = primaryLayout->PushWidgetToLayerStack<UFoundationBaseActivatable>(layer, InventoryRootWidget, [](UFoundationBaseActivatable& Activatable) {
+				UE_LOG(LogUIDebug, Log, TEXT("Inventory: Opened"));
+			});
+			InventoryDeactivatedHandle = CreatedRoot->OnDeactivated().AddUObject(this, &UPlayerInventoryComponent::OnInventoryClosed);
+			return true;
 		}
 	}
-	else
-	{
-		if (CreatedRoot != nullptr)
-		{
-			// todo: cast inst. widget to root type and call Close()
-		}
-	}
+	return false;
 }
 
+void UPlayerInventoryComponent::OnInventoryClosed()
+{
+	UE_LOG(LogUIDebug, Log, TEXT("Inventory: Closed"));
+	CreatedRoot->OnDeactivated().Remove(InventoryDeactivatedHandle);
+	CreatedRoot = nullptr;
+}

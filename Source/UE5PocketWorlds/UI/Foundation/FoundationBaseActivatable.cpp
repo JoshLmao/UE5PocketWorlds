@@ -2,8 +2,14 @@
 
 
 #include "FoundationBaseActivatable.h"
+#include "UE5PocketWorlds/UE5PocketWorlds.h"
 
 #include UE_INLINE_GENERATED_CPP_BY_NAME(FoundationBaseActivatable)
+
+UFoundationBaseActivatable::UFoundationBaseActivatable()
+{
+	bIsBackHandler = true;
+}
 
 TOptional<FUIInputConfig> UFoundationBaseActivatable::GetDesiredInputConfig() const
 {
@@ -19,4 +25,10 @@ TOptional<FUIInputConfig> UFoundationBaseActivatable::GetDesiredInputConfig() co
 		default:
 			return TOptional<FUIInputConfig>();
 	}
+}
+
+bool UFoundationBaseActivatable::NativeOnHandleBackAction()
+{
+	UE_LOG(LogUIDebug, Log, TEXT("%s: Activatable closed via back handle"), *GetName());
+	return Super::NativeOnHandleBackAction();
 }

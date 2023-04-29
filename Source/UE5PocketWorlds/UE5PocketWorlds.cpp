@@ -4,4 +4,5 @@
 #include "Modules/ModuleManager.h"
 
 IMPLEMENT_PRIMARY_GAME_MODULE( FDefaultGameModuleImpl, UE5PocketWorlds, "UE5PocketWorlds" );
- 
+
+DEFINE_LOG_CATEGORY(LogUIDebug);

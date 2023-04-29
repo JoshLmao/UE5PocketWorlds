@@ -4,10 +4,11 @@
 #include "CommonUIExtensions.h"
 #include "UObject/ConstructorHelpers.h"
 #include "Blueprint/UserWidget.h"
+#include "UE5PocketWorlds/UI/Foundation/FoundationBaseActivatable.h"
 
 AUE5PocketWorldsPlayerController::AUE5PocketWorldsPlayerController()
 {
-	static ConstructorHelpers::FClassFinder<UUserWidget> CustomRootInventoryWidget(TEXT("/Game/PocketWorlds/UI/InGame/WBP_PlayerHUDLayout"));
+	static ConstructorHelpers::FClassFinder<UFoundationBaseActivatable> CustomRootInventoryWidget(TEXT("/Game/PocketWorlds/UI/InGame/WBP_PlayerHUDLayout"));
 	PlayerHUDWidgetClass = CustomRootInventoryWidget.Class;
 
 	InventoryComponent = CreateDefaultSubobject<UPlayerInventoryComponent>(TEXT("Player Inventory Component"));
@@ -22,7 +23,10 @@ void AUE5PocketWorldsPlayerController::BeginPlay()
 
 void AUE5PocketWorldsPlayerController::ToggleInventory(bool open)
 {
-	InventoryComponent->ToggleOpen(open);
+	if (open) 
+	{
+		InventoryComponent->Open();
+	}
 }
 
 void AUE5PocketWorldsPlayerController::ReceivedPlayer()

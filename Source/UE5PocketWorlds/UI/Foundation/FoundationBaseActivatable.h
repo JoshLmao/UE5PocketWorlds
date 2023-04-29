@@ -1,5 +1,3 @@
-// Fill out your copyright notice in the Description page of Project Settings.
-
 #pragma once
 
 #include "CoreMinimal.h"
@@ -26,8 +24,12 @@ class UE5POCKETWORLDS_API UFoundationBaseActivatable : public UCommonActivatable
 	GENERATED_BODY()
 
 public:
+	UFoundationBaseActivatable();
+
+public:
 	//~UCommonActivatableWidget interface
-	virtual TOptional<FUIInputConfig> GetDesiredInputConfig() const override;
+	TOptional<FUIInputConfig> GetDesiredInputConfig() const override;
+	bool NativeOnHandleBackAction() override;
 	//~End of UCommonActivatableWidget interface
 
 protected:
