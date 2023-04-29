@@ -5,6 +5,7 @@
 #include "GameFramework/PlayerController.h"
 #include <UE5PocketWorlds/Player/PocketWorldsLocalPlayer.h>
 #include "CommonActivatableWidget.h"
+#include "UObject/ConstructorHelpers.h"
 
 // Sets default values for this component's properties
 UPlayerInventoryComponent::UPlayerInventoryComponent()

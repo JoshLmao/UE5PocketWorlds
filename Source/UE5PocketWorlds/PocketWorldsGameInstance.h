@@ -13,9 +13,5 @@ UCLASS()
 class UE5POCKETWORLDS_API UPocketWorldsGameInstance : public UCommonGameInstance
 {
 	GENERATED_BODY()
-	
-public:
-	int32 AddLocalPlayer(ULocalPlayer* NewPlayer, FPlatformUserId UserId) override;
-	bool RemoveLocalPlayer(ULocalPlayer* ExistingPlayer) override;
 
 };

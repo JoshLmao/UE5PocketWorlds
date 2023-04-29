@@ -8,6 +8,7 @@
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
 #include "UE5PocketWorldsPlayerController.h"
+#include "Engine/LocalPlayer.h"
 
 
 //////////////////////////////////////////////////////////////////////////
