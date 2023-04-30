@@ -15,5 +15,9 @@ class UE5POCKETWORLDS_API UInventoryRootWidgetActivatable : public UFoundationBa
 	GENERATED_BODY()
 
 	UInventoryRootWidgetActivatable();
+
+public:
+	UPROPERTY(meta = (BindWidget))
+	class UCommonUserWidget* UW_InventoryContainer;
 };
 

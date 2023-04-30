@@ -8,7 +8,9 @@
 
 AUE5PocketWorldsPlayerController::AUE5PocketWorldsPlayerController()
 {
-	static ConstructorHelpers::FClassFinder<UFoundationBaseActivatable> CustomRootInventoryWidget(TEXT("/Game/PocketWorlds/UI/InGame/WBP_PlayerHUDLayout"));
+	static ConstructorHelpers::FClassFinder<UFoundationBaseActivatable> CustomRootInventoryWidget(
+		TEXT("/Game/PocketWorlds/UI/InGame/WBP_PlayerHUDLayout")
+	);
 	PlayerHUDWidgetClass = CustomRootInventoryWidget.Class;
 
 	InventoryComponent = CreateDefaultSubobject<UPlayerInventoryComponent>(TEXT("Player Inventory Component"));
