@@ -17,9 +17,27 @@ public:
 	class UImage* RenderImage;
 
 	void NativePreConstruct() override;
+	void NativeConstruct() override;
 
 protected:
 	// Material the world camera paints to
 	UPROPERTY(EditDefaultsOnly)
 	class UMaterialInterface* CameraRenderMaterial;
+
+	// Data asset that defines our pocket level to use
+	UPROPERTY(EditDefaultsOnly)
+	class UPocketLevel* InventoryPocketLevelDefinition;
+
+	// Location in current level to spawn our pocket level
+	UPROPERTY(EditDefaultsOnly)
+	FVector PocketLevelSpawnLocation = FVector::ZeroVector;
+
+	UPROPERTY(EditDefaultsOnly)
+	TSubclassOf<class UPocketCapture> PocketCaptureClass;
+
+private:
+	// Our created level instance
+	class UPocketLevelInstance* PocketLevelInstance;
+	class UPocketCapture* PocketCaptureInstance;
+
 };
