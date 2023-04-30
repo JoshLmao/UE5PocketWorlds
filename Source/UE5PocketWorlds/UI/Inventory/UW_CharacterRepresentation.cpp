@@ -3,7 +3,8 @@
 #include "Materials/Material.h"
 #include "PocketLevelSystem.h"
 #include "PocketLevelInstance.h"
-#include "PocketCaptureSubsystem.h"
+#include "Kismet/GameplayStatics.h"
+#include "UE5PocketWorlds/Worlds/PocketLevelStageManager.h"
 
 void UUW_CharacterRepresentation::NativePreConstruct()
 {
@@ -20,9 +21,16 @@ void UUW_CharacterRepresentation::NativeConstruct()
 	PocketLevelInstance = pocketLevelSubsys->GetOrCreatePocketLevelFor(GetOwningLocalPlayer(), InventoryPocketLevelDefinition, PocketLevelSpawnLocation);
 	check(PocketLevelInstance != nullptr && "You need to define a valid level definition");
 
-	auto* pocketCaptureSubsys = GetWorld()->GetSubsystem<UPocketCaptureSubsystem>();
-	PocketCaptureInstance = pocketCaptureSubsys->CreateThumbnailRenderer(PocketCaptureClass);
-	check(PocketCaptureInstance != nullptr);
+	auto readyDelegate = FPocketLevelInstanceEvent::FDelegate::CreateUObject(this, &UUW_CharacterRepresentation::OnLevelReady);
+	PocketLevelInstance->AddReadyCallback(readyDelegate);
+}
 
-	PocketLevelInstance->StreamIn();
+void UUW_CharacterRepresentation::OnLevelReady(UPocketLevelInstance* Instance)
+{
+	// @todo: reliably access spawned pocket level world to get manager
+	auto* pocketLevelStageManager = UGameplayStatics::GetActorOfClass(GetWorld(), APocketLevelStageManager::StaticClass());
+	if (pocketLevelStageManager != nullptr)
+	{
+		UE_LOG(LogTemp, Log, TEXT("Found Stage Manager!"));
+	}
 }

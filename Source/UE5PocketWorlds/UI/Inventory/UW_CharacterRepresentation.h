@@ -40,4 +40,6 @@ private:
 	class UPocketLevelInstance* PocketLevelInstance;
 	class UPocketCapture* PocketCaptureInstance;
 
+	UFUNCTION()
+	void OnLevelReady(UPocketLevelInstance* Instance);
 };
