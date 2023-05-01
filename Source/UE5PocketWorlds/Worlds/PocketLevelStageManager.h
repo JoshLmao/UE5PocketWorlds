@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
+#include "Engine/World.h"
 #include "PocketLevelStageManager.generated.h"
 
 /*
@@ -21,21 +22,19 @@ protected:
 	void BeginPlay() override;
 
 public:
-	UPROPERTY(EditAnywhere)
-	TSubclassOf<class AActor> ActorToSpawn;
-
-
 	// Config for PocketCapture
 	UPROPERTY(EditDefaultsOnly)
 	TSubclassOf<class UPocketCapture> PocketCaptureClass;
 
 	// Active pocket capture instance for this pocket level
 	class UPocketCapture* PocketCaptureInst;
-	class AActor* SpawnedActor;
 
 	// Gets the active UPocketCapture instance for this PocketLevel
 	UFUNCTION(BlueprintCallable)
 	UPocketCapture* GetPocketCapture();
+
+	// Spawns a given actor in the pocket level
+	AActor* SpawnActorInPocketLevel(TSubclassOf<AActor> ActorClassToSpawn, FActorSpawnParameters ActorSpawnParams);
 
 private:
 	// Custom root component, scene component

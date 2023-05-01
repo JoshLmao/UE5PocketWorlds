@@ -18,6 +18,7 @@ public:
 
 	void NativePreConstruct() override;
 	void NativeConstruct() override;
+	void NativeTick(const FGeometry& MyGeometry, float InDeltaTime) override;
 
 protected:
 	// Material the world camera paints to
@@ -42,4 +43,6 @@ private:
 
 	UFUNCTION()
 	void OnLevelReady(UPocketLevelInstance* Instance);
+
+	void CaptureFrame();
 };

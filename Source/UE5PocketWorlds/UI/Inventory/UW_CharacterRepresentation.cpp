@@ -14,12 +14,15 @@ void UUW_CharacterRepresentation::NativePreConstruct()
 {
 	Super::NativePreConstruct();
 
-	RenderImage->SetBrushFromMaterial(CameraRenderMaterial);
+	if (RenderImage != nullptr)
+	{
+		RenderImage->SetBrushFromMaterial(CameraRenderMaterial);	
+	}
 }
 
 void UUW_CharacterRepresentation::NativeConstruct()
 {
-	Super::Construct();
+	Super::NativeConstruct();
 
 	// Get subsystem that controls creating/loading pocket world levels
 	auto* pocketLevelSubsys = GetWorld()->GetSubsystem<UPocketLevelSubsystem>();
@@ -27,8 +30,16 @@ void UUW_CharacterRepresentation::NativeConstruct()
 	PocketLevelInstance = pocketLevelSubsys->GetOrCreatePocketLevelFor(GetOwningLocalPlayer(), InventoryPocketLevelDefinition, PocketLevelSpawnLocation);
 	check(PocketLevelInstance != nullptr && "You need to define a valid level definition");
 
+	// Listen for once the pocket level has spawned
 	auto readyDelegate = FPocketLevelInstanceEvent::FDelegate::CreateUObject(this, &UUW_CharacterRepresentation::OnLevelReady);
 	PocketLevelInstance->AddReadyCallback(readyDelegate);
+}
+
+void UUW_CharacterRepresentation::NativeTick(const FGeometry& MyGeometry, float InDeltaTime)
+{
+	Super::NativeTick(MyGeometry, InDeltaTime);
+
+	CaptureFrame();
 }
 
 void UUW_CharacterRepresentation::OnLevelReady(UPocketLevelInstance* Instance)
@@ -38,15 +49,24 @@ void UUW_CharacterRepresentation::OnLevelReady(UPocketLevelInstance* Instance)
 	if (auto stageManager = Cast<APocketLevelStageManager>(pocketLevelStageManagerActor))
 	{
 		UE_LOG(LogTemp, Log, TEXT("Found Stage Manager!"));
-		auto* sceneCapture = stageManager->GetPocketCapture();
+		PocketCaptureInstance = stageManager->GetPocketCapture();
 		
 		// Set Diffuse and AlphaMask for dynamic material of the image
 		auto* imageMaterial = RenderImage->GetDynamicMaterial();
-		imageMaterial->SetTextureParameterValue(TEXT("Diffuse"), sceneCapture->GetOrCreateDiffuseRenderTarget());
-		imageMaterial->SetTextureParameterValue(TEXT("AlphaMask"), sceneCapture->GetOrCreateAlphaMaskRenderTarget());
+		imageMaterial->SetTextureParameterValue(TEXT("Diffuse"), PocketCaptureInstance->GetOrCreateDiffuseRenderTarget());
+		imageMaterial->SetTextureParameterValue(TEXT("AlphaMask"), PocketCaptureInstance->GetOrCreateAlphaMaskRenderTarget());
 
-		// capture one frame for now
-		// @todo do every tick
-		sceneCapture->CaptureDiffuse();
+		// Capture the initial frame
+		CaptureFrame();
+	}
+}
+
+void UUW_CharacterRepresentation::CaptureFrame()
+{
+	// When valid, capture every frame of the capture instance
+	if (PocketCaptureInstance != nullptr)
+	{
+		PocketCaptureInstance->CaptureDiffuse();
+		PocketCaptureInstance->CaptureAlphaMask();
 	}
 }
