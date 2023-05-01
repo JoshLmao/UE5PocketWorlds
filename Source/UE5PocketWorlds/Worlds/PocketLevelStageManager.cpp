@@ -3,12 +3,23 @@
 #include "Components/SceneComponent.h"
 #include "PocketCaptureSubsystem.h"
 #include "PocketCapture.h"
+#include "Camera/CameraComponent.h"
+#include "Components/SceneComponent.h"
 
 APocketLevelStageManager::APocketLevelStageManager()
 {
 	PrimaryActorTick.bCanEverTick = false;
 
-	ActorSpawnPointComponent = CreateDefaultSubobject<USceneComponent>(TEXT("Actor Spawn Point Component"));
+	RootSceneComponent = CreateDefaultSubobject<USceneComponent>(TEXT("RootSceneComponent"));
+	RootComponent = RootSceneComponent;
+
+	ActorSpawnPointComponent = CreateDefaultSubobject<USceneComponent>(TEXT("ActorSpawnPointComponent"));
+	ActorSpawnPointComponent->SetupAttachment(RootSceneComponent);
+	
+	CameraComponent = CreateDefaultSubobject<UCameraComponent>(TEXT("CameraComponent"));
+	CameraComponent->SetupAttachment(RootSceneComponent);
+	CameraComponent->SetRelativeLocation(FVector(400.0f, 0.0f, 100.0f));
+	CameraComponent->SetRelativeRotation(FRotator(-10.0f, -180.0f, 0.0f));
 }
 
 void APocketLevelStageManager::BeginPlay()
@@ -20,7 +31,7 @@ void APocketLevelStageManager::BeginPlay()
 	spawnParams.Owner = this;
 	SpawnedActor = GetWorld()->SpawnActor<AActor>(ActorToSpawn, spawnParams);
 
-	FAttachmentTransformRules attachRules(EAttachmentRule::KeepWorld, true);
+	FAttachmentTransformRules attachRules(EAttachmentRule::SnapToTarget, true);
 	SpawnedActor->AttachToComponent(ActorSpawnPointComponent, attachRules);
 
 	// 2

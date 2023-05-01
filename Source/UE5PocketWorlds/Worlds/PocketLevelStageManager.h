@@ -24,9 +24,6 @@ public:
 	UPROPERTY(EditAnywhere)
 	TSubclassOf<class AActor> ActorToSpawn;
 
-	// Component to act as root as where to spawn actors from
-	UPROPERTY(VisibleAnywhere)
-	class USceneComponent* ActorSpawnPointComponent;
 
 	// Config for PocketCapture
 	UPROPERTY(EditDefaultsOnly)
@@ -39,4 +36,17 @@ public:
 	// Gets the active UPocketCapture instance for this PocketLevel
 	UFUNCTION(BlueprintCallable)
 	UPocketCapture* GetPocketCapture();
+
+private:
+	// Custom root component, scene component
+	UPROPERTY(VisibleAnywhere)
+	class USceneComponent* RootSceneComponent;
+
+	// Component to act as root as where to spawn actors from
+	UPROPERTY(VisibleAnywhere)
+	class USceneComponent* ActorSpawnPointComponent;
+
+	// @todo
+	UPROPERTY(VisibleAnywhere)
+	class UCameraComponent* CameraComponent;
 };
