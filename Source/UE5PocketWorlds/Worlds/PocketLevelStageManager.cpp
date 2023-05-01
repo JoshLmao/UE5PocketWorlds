@@ -11,6 +11,9 @@ APocketLevelStageManager::APocketLevelStageManager()
 	PrimaryActorTick.bCanEverTick = false;
 
 	RootSceneComponent = CreateDefaultSubobject<USceneComponent>(TEXT("RootSceneComponent"));
+	RootSceneComponent->SetMobility(EComponentMobility::Type::Static);	//make static to allow for children/child actors
+	
+	// Set as root component of the manager
 	RootComponent = RootSceneComponent;
 
 	ActorSpawnPointComponent = CreateDefaultSubobject<USceneComponent>(TEXT("ActorSpawnPointComponent"));
@@ -20,6 +23,10 @@ APocketLevelStageManager::APocketLevelStageManager()
 	CameraComponent->SetupAttachment(RootSceneComponent);
 	CameraComponent->SetRelativeLocation(FVector(400.0f, 0.0f, 100.0f));
 	CameraComponent->SetRelativeRotation(FRotator(-10.0f, -180.0f, 0.0f));
+	// FoV/Aspect ratio
+	CameraComponent->bConstrainAspectRatio = false;
+	CameraComponent->SetAspectRatio(0.5f);
+	CameraComponent->SetFieldOfView(20.0f);
 }
 
 void APocketLevelStageManager::BeginPlay()
