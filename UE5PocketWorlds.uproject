@@ -7,7 +7,14 @@
 		{
 			"Name": "UE5PocketWorlds",
 			"Type": "Runtime",
-			"LoadingPhase": "Default"
+			"LoadingPhase": "Default",
+			"AdditionalDependencies": [
+				"Engine",
+				"UMG",
+				"CommonGame",
+				"CommonUI",
+				"PocketWorlds"
+			]
 		}
 	],
 	"Plugins": [
@@ -17,6 +24,18 @@
 			"TargetAllowList": [
 				"Editor"
 			]
+		},
+		{
+			"Name": "CommonUI",
+			"Enabled": true
+		},
+		{
+			"Name": "CommonGame",
+			"Enabled": true
+		},
+		{
+			"Name": "PocketWorlds",
+			"Enabled": true
 		}
 	]
 }

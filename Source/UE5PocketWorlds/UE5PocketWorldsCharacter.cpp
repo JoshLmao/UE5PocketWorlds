@@ -7,6 +7,8 @@
 #include "Components/CapsuleComponent.h"
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
+#include "UE5PocketWorldsPlayerController.h"
+#include "Engine/LocalPlayer.h"
 
 
 //////////////////////////////////////////////////////////////////////////
@@ -69,6 +71,9 @@ void AUE5PocketWorldsCharacter::SetupPlayerInputComponent(class UInputComponent*
 
 		//Looking
 		EnhancedInputComponent->BindAction(LookAction, ETriggerEvent::Triggered, this, &AUE5PocketWorldsCharacter::Look);
+
+		// Inventory
+		EnhancedInputComponent->BindAction(PauseAction, ETriggerEvent::Triggered, this, &AUE5PocketWorldsCharacter::Pause);
 	}
 }
 
@@ -96,6 +101,17 @@ void AUE5PocketWorldsCharacter::Look(const FInputActionValue& Value)
 		// add yaw and pitch input to controller
 		AddControllerYawInput(LookAxisVector.X);
 		AddControllerPitchInput(LookAxisVector.Y);
+	}
+}
+
+void AUE5PocketWorldsCharacter::Pause(const FInputActionValue& Value)
+{
+	// todo: send up to PC
+	UE_LOG(LogTemp, Log, TEXT("PAUSE PRESSED!"));
+
+	if (auto* pc = Cast<AUE5PocketWorldsPlayerController>(GetController()))
+	{
+		pc->ToggleInventory(true);
 	}
 }
 

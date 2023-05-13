@@ -1,15 +1,17 @@
 // Copyright Epic Games, Inc. All Rights Reserved.
 
-#include "PocketWorlds.h"
+#include "CommonUserModule.h"
 
-#define LOCTEXT_NAMESPACE "FPocketWorldsModule"
+#include "Modules/ModuleManager.h"
 
-void FPocketWorldsModule::StartupModule()
+#define LOCTEXT_NAMESPACE "FCommonUserModule"
+
+void FCommonUserModule::StartupModule()
 {
 	// This code will execute after your module is loaded into memory; the exact timing is specified in the .uplugin file per-module
 }
 
-void FPocketWorldsModule::ShutdownModule()
+void FCommonUserModule::ShutdownModule()
 {
 	// This function may be called during shutdown to clean up your module.  For modules that support dynamic reloading,
 	// we call this function before unloading the module.
@@ -17,4 +19,4 @@ void FPocketWorldsModule::ShutdownModule()
 
 #undef LOCTEXT_NAMESPACE
 	
-IMPLEMENT_MODULE(FPocketWorldsModule, PocketWorlds)
+IMPLEMENT_MODULE(FCommonUserModule, CommonUser)

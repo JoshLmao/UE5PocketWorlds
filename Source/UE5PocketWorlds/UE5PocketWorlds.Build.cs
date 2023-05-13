@@ -4,10 +4,22 @@ using UnrealBuildTool;
 
 public class UE5PocketWorlds : ModuleRules
 {
-	public UE5PocketWorlds(ReadOnlyTargetRules Target) : base(Target)
-	{
-		PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
+    public UE5PocketWorlds(ReadOnlyTargetRules Target) : base(Target)
+    {
+        PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
 
-		PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "InputCore", "HeadMountedDisplay", "EnhancedInput" });
-	}
+        PublicDependencyModuleNames.AddRange(new string[] {
+            "CommonGame",
+            "CommonUI",
+            "Core",
+            "CoreUObject",
+            "Engine",
+            "EnhancedInput",
+            "GameplayTags",
+            "HeadMountedDisplay",
+            "InputCore",
+            "PocketWorlds",
+            "UMG",
+        });
+    }
 }

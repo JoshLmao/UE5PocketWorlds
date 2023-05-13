@@ -356,3 +356,4 @@ Binaries/
 # Ignore specific folders inside Plugins
 Plugins/**/Intermediate/*
 Plugins/**/Binaries/*
+enc_temp_folder/*

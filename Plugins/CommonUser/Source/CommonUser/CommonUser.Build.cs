@@ -2,12 +2,14 @@
 
 using UnrealBuildTool;
 
-public class PocketWorlds : ModuleRules
+public class CommonUser : ModuleRules
 {
-	public PocketWorlds(ReadOnlyTargetRules Target) : base(Target)
+	public CommonUser(ReadOnlyTargetRules Target) : base(Target)
 	{
 		PCHUsage = ModuleRules.PCHUsageMode.UseExplicitOrSharedPCHs;
-		
+
+		bool bUseOnlineSubsystemV1 = true;
+
 		PublicIncludePaths.AddRange(
 			new string[] {
 				// ... add public include paths required here ...
@@ -26,18 +28,33 @@ public class PocketWorlds : ModuleRules
 			new string[]
 			{
 				"Core",
+				"CoreOnline",
+				"GameplayTags",
 				// ... add other public dependencies that you statically link with here ...
 			}
 			);
-			
-		
+
+		if (bUseOnlineSubsystemV1)
+		{
+			PublicDependencyModuleNames.Add("OnlineSubsystem");
+		}
+		else
+		{
+			PublicDependencyModuleNames.Add("OnlineServicesInterface");
+		}
+		PrivateDependencyModuleNames.Add("OnlineSubsystemUtils");
+		PublicDefinitions.Add("COMMONUSER_OSSV1=" + (bUseOnlineSubsystemV1 ? "1" : "0"));
+
 		PrivateDependencyModuleNames.AddRange(
 			new string[]
 			{
+				"CoreOnline",
 				"CoreUObject",
 				"Engine",
 				"Slate",
 				"SlateCore",
+				"ApplicationCore",
+				"InputCore",
 				// ... add private dependencies that you statically link with here ...	
 			}
 			);
