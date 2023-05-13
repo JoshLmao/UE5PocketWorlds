@@ -18,6 +18,7 @@ public class UE5PocketWorlds : ModuleRules
             "GameplayTags",
             "HeadMountedDisplay",
             "InputCore",
+            "PocketWorlds",
             "UMG",
         });
     }

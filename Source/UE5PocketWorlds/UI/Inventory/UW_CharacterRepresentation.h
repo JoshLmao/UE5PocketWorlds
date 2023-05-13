@@ -2,6 +2,7 @@
 
 #include "CoreMinimal.h"
 #include "CommonUserWidget.h"
+#include "GameplayTagContainer.h"
 #include "UW_CharacterRepresentation.generated.h"
 
 /**
@@ -13,13 +14,31 @@ class UE5POCKETWORLDS_API UUW_CharacterRepresentation : public UCommonUserWidget
 	GENERATED_BODY()
 	
 public:
+	// Image element to render pocket capture to
 	UPROPERTY(meta = (BindWidget))
 	class UImage* RenderImage;
 
 	void NativePreConstruct() override;
+	void NativeConstruct() override;
+	void NativeTick(const FGeometry& MyGeometry, float InDeltaTime) override;
+	void NativeDestruct() override;
 
 protected:
 	// Material the world camera paints to
 	UPROPERTY(EditDefaultsOnly)
 	class UMaterialInterface* CameraRenderMaterial;
+
+	UPROPERTY(EditDefaultsOnly)
+	FGameplayTag InventoryPocketWorldGameplayTag;
+
+private:
+	// Capture instance
+	class UPocketCapture* PocketCaptureInstance;
+
+	void CaptureFrame();
+
+	UFUNCTION()
+	void OnInventoryLevelReady(class UPocketLevelInstance* Instance);
+
+	FDelegateHandle PocketLevelReadyDelegateHandle;
 };

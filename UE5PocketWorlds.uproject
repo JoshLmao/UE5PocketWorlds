@@ -12,7 +12,8 @@
 				"Engine",
 				"UMG",
 				"CommonGame",
-				"CommonUI"
+				"CommonUI",
+				"PocketWorlds"
 			]
 		}
 	],
@@ -30,6 +31,10 @@
 		},
 		{
 			"Name": "CommonGame",
+			"Enabled": true
+		},
+		{
+			"Name": "PocketWorlds",
 			"Enabled": true
 		}
 	]

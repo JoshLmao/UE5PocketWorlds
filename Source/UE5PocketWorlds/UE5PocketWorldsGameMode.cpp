@@ -13,5 +13,4 @@ AUE5PocketWorldsGameMode::AUE5PocketWorldsGameMode()
 	DefaultPawnClass = PlayerPawnClassFinder.Class;
 
 	PlayerControllerClass = AUE5PocketWorldsPlayerController::StaticClass();
-
 }
