@@ -60,9 +60,10 @@ void AUE5PocketWorldsPlayerController::InitInventoryPocketWorld()
 		// Get subsystem that controls creating/loading pocket world levels
 		auto* bridgeSubsystem = GetWorld()->GetSubsystem<UPocketLevelBridgeSubsystem>();
 
-		// Spawn defined level and StreamOut until we're ready to use it
+		// Spawn defined level
 		bridgeSubsystem->SpawnPocketLevel(GetLocalPlayer(), InventoryPocketLevelDefinition, PocketLevelSpawnLocation);
-		//bridgeSubsystem->StreamOutLevel(InventoryPocketLevelDefinition->IdentifingGameplayTag);
+		// Stream out until we're ready for use
+		bridgeSubsystem->StreamOutLevel(InventoryPocketLevelDefinition->IdentifingGameplayTag);
 	}
 	else
 	{

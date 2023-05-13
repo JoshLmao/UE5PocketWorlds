@@ -28,6 +28,8 @@ public:
 
 	// Gets the stage manager for the created pocket level
 	class APocketLevelStageManager* GetStageManager(FGameplayTag PocketLevelGameplayTag);
+	// Gets the PocketLevelInstance for the created pocket level
+	class UPocketLevelInstance* GetPocketLevelInstance(FGameplayTag PocketLevelGameplayTag);
 
 private:
 	// Cache of identifying gameplay tag to created pocket world instances

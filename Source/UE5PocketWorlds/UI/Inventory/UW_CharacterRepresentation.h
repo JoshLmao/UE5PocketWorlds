@@ -21,6 +21,7 @@ public:
 	void NativePreConstruct() override;
 	void NativeConstruct() override;
 	void NativeTick(const FGeometry& MyGeometry, float InDeltaTime) override;
+	void NativeDestruct() override;
 
 protected:
 	// Material the world camera paints to
@@ -35,4 +36,9 @@ private:
 	class UPocketCapture* PocketCaptureInstance;
 
 	void CaptureFrame();
+
+	UFUNCTION()
+	void OnInventoryLevelReady(class UPocketLevelInstance* Instance);
+
+	FDelegateHandle PocketLevelReadyDelegateHandle;
 };

@@ -33,7 +33,7 @@ void UPocketLevelBridgeSubsystem::StreamOutLevel(FGameplayTag PocketLevelGamepla
 
 APocketLevelStageManager* UPocketLevelBridgeSubsystem::GetStageManager(FGameplayTag PocketLevelGameplayTag)
 {
-	auto* pocketlevelInstance = SpawnedLevelsMap.FindChecked(PocketLevelGameplayTag);
+	auto* pocketlevelInstance = GetPocketLevelInstance(PocketLevelGameplayTag);
 
 	// @todo improvement
 	// Able to get streaming level from pocketlevelInstance and get spawned manager actor from that
@@ -51,4 +51,9 @@ APocketLevelStageManager* UPocketLevelBridgeSubsystem::GetStageManager(FGameplay
 	}
 
 	return nullptr;
+}
+
+UPocketLevelInstance* UPocketLevelBridgeSubsystem::GetPocketLevelInstance(FGameplayTag PocketLevelGameplayTag)
+{
+	return SpawnedLevelsMap.FindChecked(PocketLevelGameplayTag);
 }

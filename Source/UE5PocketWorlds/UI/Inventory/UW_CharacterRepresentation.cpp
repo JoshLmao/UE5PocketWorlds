@@ -24,19 +24,16 @@ void UUW_CharacterRepresentation::NativeConstruct()
 {
 	Super::NativeConstruct();
 
-	// @todo: reliably access spawned pocket level world to get manager
+	// Obtain pocket level instance for inventory
 	auto bridgeSubsys = GetWorld()->GetSubsystem<UPocketLevelBridgeSubsystem>();
-	//bridgeSubsys->StreamInLevel(InventoryPocketWorldGameplayTag);
-
-	APocketLevelStageManager* pocketLevelStageManager = bridgeSubsys->GetStageManager(InventoryPocketWorldGameplayTag);
-	check(pocketLevelStageManager != nullptr && "Unable to find pocket world stage manager");
-
-	PocketCaptureInstance = pocketLevelStageManager->GetPocketCapture();
-
-	// Set Diffuse and AlphaMask for dynamic material of the image
-	auto* imageMaterial = RenderImage->GetDynamicMaterial();
-	imageMaterial->SetTextureParameterValue(TEXT("Diffuse"), PocketCaptureInstance->GetOrCreateDiffuseRenderTarget());
-	imageMaterial->SetTextureParameterValue(TEXT("AlphaMask"), PocketCaptureInstance->GetOrCreateAlphaMaskRenderTarget());
+	auto* inventoryLevelInstance = bridgeSubsys->GetPocketLevelInstance(InventoryPocketWorldGameplayTag);
+	
+	// Add callback to when streamed in level is ready
+	auto delegate = FPocketLevelInstanceEvent::FDelegate::CreateUObject(this, &UUW_CharacterRepresentation::OnInventoryLevelReady);
+	PocketLevelReadyDelegateHandle = inventoryLevelInstance->AddReadyCallback(delegate);
+	
+	// Begin stream in process
+	inventoryLevelInstance->StreamIn();
 }
 
 void UUW_CharacterRepresentation::NativeTick(const FGeometry& MyGeometry, float InDeltaTime)
@@ -44,6 +41,19 @@ void UUW_CharacterRepresentation::NativeTick(const FGeometry& MyGeometry, float 
 	Super::NativeTick(MyGeometry, InDeltaTime);
 
 	CaptureFrame();
+}
+
+void UUW_CharacterRepresentation::NativeDestruct()
+{
+	Super::NativeDestruct();
+
+	// Obtain pocket level instance for inventory
+	auto bridgeSubsys = GetWorld()->GetSubsystem<UPocketLevelBridgeSubsystem>();
+	auto* inventoryLevelInstance = bridgeSubsys->GetPocketLevelInstance(InventoryPocketWorldGameplayTag);
+
+	// Stop listening to ready callback, stream out the level
+	inventoryLevelInstance->RemoveReadyCallback(PocketLevelReadyDelegateHandle);
+	inventoryLevelInstance->StreamOut();
 }
 
 void UUW_CharacterRepresentation::CaptureFrame()
@@ -54,4 +64,21 @@ void UUW_CharacterRepresentation::CaptureFrame()
 		PocketCaptureInstance->CaptureDiffuse();
 		PocketCaptureInstance->CaptureAlphaMask();
 	}
+}
+
+void UUW_CharacterRepresentation::OnInventoryLevelReady(UPocketLevelInstance* Instance)
+{
+	auto bridgeSubsys = GetWorld()->GetSubsystem<UPocketLevelBridgeSubsystem>();
+	
+	// Get stage manager for the instance
+	APocketLevelStageManager* pocketLevelStageManager = bridgeSubsys->GetStageManager(InventoryPocketWorldGameplayTag);
+	check(pocketLevelStageManager != nullptr && "Unable to find pocket world stage manager");
+
+	// Obtain pocket capture of stage
+	PocketCaptureInstance = pocketLevelStageManager->GetPocketCapture();
+
+	// Set Diffuse and AlphaMask for dynamic material of the image
+	auto* imageMaterial = RenderImage->GetDynamicMaterial();
+	imageMaterial->SetTextureParameterValue(TEXT("Diffuse"), PocketCaptureInstance->GetOrCreateDiffuseRenderTarget());
+	imageMaterial->SetTextureParameterValue(TEXT("AlphaMask"), PocketCaptureInstance->GetOrCreateAlphaMaskRenderTarget());
 }
