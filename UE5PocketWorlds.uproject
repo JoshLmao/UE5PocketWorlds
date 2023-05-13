@@ -12,7 +12,8 @@
 				"Engine",
 				"UMG",
 				"CommonGame",
-				"CommonUI"
+				"CommonUI",
+				"PocketWorlds"
 			]
 		}
 	],

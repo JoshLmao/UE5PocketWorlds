@@ -21,8 +21,12 @@ class UE5POCKETWORLDS_API UPocketLevelBridgeSubsystem : public UWorldSubsystem
 	
 public:
 	// Spawns the given pocket level
-	void SpawnPocketLevel(class ULocalPlayer* OwningLocalPlayer, class UPocketLevel* PocketLevelDefintion, FVector SpawnLocation);
+	void SpawnPocketLevel(class ULocalPlayer* OwningLocalPlayer, class UIdentifyingPocketLevel* PocketLevelDefintion, FVector SpawnLocation);
 
 	// Gets the stage manager for the created pocket level
 	class APocketLevelStageManager* GetStageManager(FGameplayTag PocketLevelGameplayTag);
+
+private:
+	// Cache of identifying gameplay tag to created pocket world instances
+	TMap<FGameplayTag, class UPocketLevelInstance*> SpawnedLevelsMap;
 };

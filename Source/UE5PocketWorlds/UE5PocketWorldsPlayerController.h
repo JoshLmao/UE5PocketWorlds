@@ -34,7 +34,7 @@ protected:
 
 	// Data asset that defines the inventory pocket level to use
 	UPROPERTY(EditDefaultsOnly, Category = "Inventory Pocket World Config")
-	class UPocketLevel* InventoryPocketLevelDefinition;
+	class UIdentifyingPocketLevel* InventoryPocketLevelDefinition;
 
 	// Location in current level to spawn the pocket level
 	UPROPERTY(EditDefaultsOnly, Category = "Inventory Pocket World Config")

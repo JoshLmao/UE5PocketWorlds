@@ -54,9 +54,16 @@ void AUE5PocketWorldsPlayerController::ReceivedPlayer()
 
 void AUE5PocketWorldsPlayerController::InitInventoryPocketWorld()
 {
-	// Get subsystem that controls creating/loading pocket world levels
-	auto* bridgeSubsystem = GetWorld()->GetSubsystem<UPocketLevelBridgeSubsystem>();
+	if (InventoryPocketLevelDefinition != nullptr)
+	{
+		// Get subsystem that controls creating/loading pocket world levels
+		auto* bridgeSubsystem = GetWorld()->GetSubsystem<UPocketLevelBridgeSubsystem>();
 
-	// Create our defined level
-	bridgeSubsystem->SpawnPocketLevel(GetLocalPlayer(), InventoryPocketLevelDefinition, PocketLevelSpawnLocation);
+		// Create our defined level
+		bridgeSubsystem->SpawnPocketLevel(GetLocalPlayer(), InventoryPocketLevelDefinition, PocketLevelSpawnLocation);
+	}
+	else
+	{
+		check(false && "Define a valid definition for the Inventory world");
+	}
 }
