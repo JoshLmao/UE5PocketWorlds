@@ -7,6 +7,7 @@
 #include "UE5PocketWorlds/UI/Foundation/FoundationBaseActivatable.h"
 #include "Subsystem/PocketLevelBridgeSubsystem.h"
 #include "GameFramework/Character.h"
+#include "UE5PocketWorlds/Worlds/IdentifyingPocketLevel.h"
 
 AUE5PocketWorldsPlayerController::AUE5PocketWorldsPlayerController()
 {
@@ -59,8 +60,9 @@ void AUE5PocketWorldsPlayerController::InitInventoryPocketWorld()
 		// Get subsystem that controls creating/loading pocket world levels
 		auto* bridgeSubsystem = GetWorld()->GetSubsystem<UPocketLevelBridgeSubsystem>();
 
-		// Create our defined level
+		// Spawn defined level and StreamOut until we're ready to use it
 		bridgeSubsystem->SpawnPocketLevel(GetLocalPlayer(), InventoryPocketLevelDefinition, PocketLevelSpawnLocation);
+		//bridgeSubsystem->StreamOutLevel(InventoryPocketLevelDefinition->IdentifingGameplayTag);
 	}
 	else
 	{

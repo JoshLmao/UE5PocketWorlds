@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
 #include "Engine/World.h"
+#include "GameplayTagContainer.h"
 #include "PocketLevelStageManager.generated.h"
 
 /*
@@ -26,6 +27,9 @@ public:
 	UPROPERTY(EditDefaultsOnly)
 	TSubclassOf<class UPocketCapture> PocketCaptureClass;
 
+	UPROPERTY(EditDefaultsOnly)
+	FGameplayTag IdentifyingGameplayTag;
+
 	// Active pocket capture instance for this pocket level
 	class UPocketCapture* PocketCaptureInst;
 
@@ -35,7 +39,6 @@ public:
 
 	// Spawns a given actor in the pocket level
 	AActor* SpawnActorInPocketLevel(TSubclassOf<AActor> ActorClassToSpawn, FActorSpawnParameters ActorSpawnParams);
-
 private:
 	// Custom root component, scene component
 	UPROPERTY(VisibleAnywhere)

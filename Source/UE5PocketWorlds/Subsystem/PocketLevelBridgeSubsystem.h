@@ -23,6 +23,9 @@ public:
 	// Spawns the given pocket level
 	void SpawnPocketLevel(class ULocalPlayer* OwningLocalPlayer, class UIdentifyingPocketLevel* PocketLevelDefintion, FVector SpawnLocation);
 
+	void StreamInLevel(FGameplayTag LevelIdentifier);
+	void StreamOutLevel(FGameplayTag LevelIdentifier);
+
 	// Gets the stage manager for the created pocket level
 	class APocketLevelStageManager* GetStageManager(FGameplayTag PocketLevelGameplayTag);
 

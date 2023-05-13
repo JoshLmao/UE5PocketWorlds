@@ -4,7 +4,6 @@
 #include "PocketLevelSystem.h"
 #include "PocketLevelInstance.h"
 #include "PocketCapture.h"
-#include "Kismet/GameplayStatics.h"
 #include "UE5PocketWorlds/Worlds/PocketLevelStageManager.h"
 #include "Materials/MaterialInstanceDynamic.h"
 #include "Engine/Texture2D.h"
@@ -27,9 +26,11 @@ void UUW_CharacterRepresentation::NativeConstruct()
 
 	// @todo: reliably access spawned pocket level world to get manager
 	auto bridgeSubsys = GetWorld()->GetSubsystem<UPocketLevelBridgeSubsystem>();
+	//bridgeSubsys->StreamInLevel(InventoryPocketWorldGameplayTag);
+
 	APocketLevelStageManager* pocketLevelStageManager = bridgeSubsys->GetStageManager(InventoryPocketWorldGameplayTag);
-	
 	check(pocketLevelStageManager != nullptr && "Unable to find pocket world stage manager");
+
 	PocketCaptureInstance = pocketLevelStageManager->GetPocketCapture();
 
 	// Set Diffuse and AlphaMask for dynamic material of the image
