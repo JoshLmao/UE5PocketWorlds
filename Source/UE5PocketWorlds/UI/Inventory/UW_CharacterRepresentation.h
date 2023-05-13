@@ -2,6 +2,7 @@
 
 #include "CoreMinimal.h"
 #include "CommonUserWidget.h"
+#include "GameplayTagContainer.h"
 #include "UW_CharacterRepresentation.generated.h"
 
 /**
@@ -13,6 +14,7 @@ class UE5POCKETWORLDS_API UUW_CharacterRepresentation : public UCommonUserWidget
 	GENERATED_BODY()
 	
 public:
+	// Image element to render pocket capture to
 	UPROPERTY(meta = (BindWidget))
 	class UImage* RenderImage;
 
@@ -25,24 +27,12 @@ protected:
 	UPROPERTY(EditDefaultsOnly)
 	class UMaterialInterface* CameraRenderMaterial;
 
-	// Data asset that defines our pocket level to use
 	UPROPERTY(EditDefaultsOnly)
-	class UPocketLevel* InventoryPocketLevelDefinition;
-
-	// Location in current level to spawn our pocket level
-	UPROPERTY(EditDefaultsOnly)
-	FVector PocketLevelSpawnLocation = FVector::ZeroVector;
-
-	UPROPERTY(EditDefaultsOnly)
-	TSubclassOf<class UPocketCapture> PocketCaptureClass;
+	FGameplayTag InventoryPocketWorldGameplayTag;
 
 private:
-	// Our created level instance
-	class UPocketLevelInstance* PocketLevelInstance;
+	// Capture instance
 	class UPocketCapture* PocketCaptureInstance;
-
-	UFUNCTION()
-	void OnLevelReady(UPocketLevelInstance* Instance);
 
 	void CaptureFrame();
 };
