@@ -2,11 +2,8 @@
 
 #include "Messaging/CommonMessagingSubsystem.h"
 
-#include "Containers/Array.h"
 #include "Engine/GameInstance.h"
 #include "Engine/LocalPlayer.h"
-#include "Templates/Casts.h"
-#include "UObject/Object.h"
 #include "UObject/UObjectHash.h"
 
 #include UE_INLINE_GENERATED_CPP_BY_NAME(CommonMessagingSubsystem)
@@ -26,7 +23,8 @@ void UCommonMessagingSubsystem::Deinitialize()
 
 bool UCommonMessagingSubsystem::ShouldCreateSubsystem(UObject* Outer) const
 {
-	if (!CastChecked<ULocalPlayer>(Outer)->GetGameInstance()->IsDedicatedServerInstance())
+	UGameInstance* GameInstance = CastChecked<ULocalPlayer>(Outer)->GetGameInstance();
+	if (GameInstance && !GameInstance->IsDedicatedServerInstance())
 	{
 		TArray<UClass*> ChildClasses;
 		GetDerivedClasses(GetClass(), ChildClasses, false);

@@ -2,6 +2,8 @@
 
 This repo contains an example project on how to use `CommonUI` and `PocketWorlds` plugins, found in Epic's [Lyra Sample Game](https://docs.unrealengine.com/5.0/en-US/lyra-sample-game-in-unreal-engine/)
 
+The project has been updated from 5.1, and currently works and tested with Unreal Engine 5.5.4
+
 ## How to: CommonUI
 
 For CommonUI to work, the project imports CommonGame and copied over functionality from Lyra class where needed.

@@ -3,12 +3,22 @@
 #pragma once
 
 #include "CommonUserTypes.h"
-#include "NativeGameplayTags.h"
-#include "Engine/GameInstance.h"
 #include "Engine/GameViewportClient.h"
+#include "GameFramework/OnlineReplStructs.h"
 #include "Subsystems/GameInstanceSubsystem.h"
-
+#include "UObject/WeakObjectPtr.h"
+#include "GameplayTagContainer.h"
 #include "CommonUserSubsystem.generated.h"
+
+#if COMMONUSER_OSSV1
+#include "Interfaces/OnlineIdentityInterface.h"
+#include "OnlineError.h"
+#else
+#include "Online/OnlineAsyncOpHandle.h"
+#endif
+
+class FNativeGameplayTag;
+class IOnlineSubsystem;
 
 /** List of tags used by the common user subsystem */
 struct COMMONUSER_API FCommonUserTags
@@ -63,6 +73,14 @@ public:
 	UPROPERTY(BlueprintReadOnly, Category = UserInfo)
 	ECommonUserInitializationState InitializationState = ECommonUserInitializationState::Invalid;
 
+	/** Returns true if this user has successfully logged in */
+	UFUNCTION(BlueprintCallable, Category = UserInfo)
+	bool IsLoggedIn() const;
+
+	/** Returns true if this user is in the middle of logging in */
+	UFUNCTION(BlueprintCallable, Category = UserInfo)
+	bool IsDoingLogin() const;
+
 	/** Returns the most recently queries result for a specific privilege, will return unknown if never queried */
 	UFUNCTION(BlueprintCallable, Category = UserInfo)
 	ECommonUserPrivilegeResult GetCachedPrivilegeResult(ECommonUserPrivilege Privilege, ECommonUserOnlineContext Context = ECommonUserOnlineContext::Game) const;
@@ -75,9 +93,13 @@ public:
 	UFUNCTION(BlueprintCallable, Category = UserInfo)
 	FUniqueNetIdRepl GetNetId(ECommonUserOnlineContext Context = ECommonUserOnlineContext::Game) const;
 
-	/** Returns the user's human readable nickname */
+	/** Returns the user's human readable nickname, this will return the value that was cached during UpdateCachedNetId or SetNickname */
 	UFUNCTION(BlueprintCallable, Category = UserInfo)
-	FString GetNickname() const;
+	FString GetNickname(ECommonUserOnlineContext Context = ECommonUserOnlineContext::Game) const;
+
+	/** Modify the user's human readable nickname, this can be used when setting up multiple guests but will get overwritten with the platform nickname for real users */
+	UFUNCTION(BlueprintCallable, Category = UserInfo)
+	void SetNickname(const FString& NewNickname, ECommonUserOnlineContext Context = ECommonUserOnlineContext::Game);
 
 	/** Returns an internal debug string for this player */
 	UFUNCTION(BlueprintCallable, Category = UserInfo)
@@ -96,6 +118,9 @@ public:
 	{
 		/** Cached net id per system */
 		FUniqueNetIdRepl CachedNetId;
+
+		/** Cached nickanem, updated whenever net ID might change */
+		FString CachedNickname;
 
 		/** Cached values of various user privileges */
 		TMap<ECommonUserPrivilege, ECommonUserPrivilegeResult> CachedPrivileges;
@@ -182,7 +207,7 @@ struct COMMONUSER_API FCommonUserInitializeParams
  * One subsystem is created for each game instance and can be accessed from blueprints or C++ code.
  * If a game-specific subclass exists, this base subsystem will not be created.
  */
-UCLASS(BlueprintType, Config=Game)
+UCLASS(BlueprintType, Config=Engine)
 class COMMONUSER_API UCommonUserSubsystem : public UGameInstanceSubsystem
 {
 	GENERATED_BODY()
@@ -300,6 +325,10 @@ public:
 	UFUNCTION(BlueprintCallable, Category = CommonUser)
 	virtual bool CancelUserInitialization(int32 LocalPlayerIndex);
 
+	/** Logs a player out of any online systems, and optionally destroys the player entirely if it's not the first one */
+	UFUNCTION(BlueprintCallable, Category = CommonUser)
+	virtual bool TryToLogOutUser(int32 LocalPlayerIndex, bool bDestroyPlayer = false);
+
 	/** Resets the login and initialization state when returning to the main menu after an error */
 	UFUNCTION(BlueprintCallable, Category = CommonUser)
 	virtual void ResetUserState();
@@ -370,6 +399,9 @@ public:
 
 	/** Returns the unique net id for a local platform user */
 	FUniqueNetIdRepl GetLocalUserNetId(FPlatformUserId PlatformUser, ECommonUserOnlineContext Context = ECommonUserOnlineContext::Game) const;
+
+	/** Returns the nickname for a local platform user, this is cached in common user Info */
+	FString GetLocalUserNickname(FPlatformUserId PlatformUser, ECommonUserOnlineContext Context = ECommonUserOnlineContext::Game) const;
 
 	/** Convert a user id to a debug string */
 	FString PlatformUserIdToString(FPlatformUserId UserId);
@@ -593,7 +625,10 @@ protected:
 	FCommonUserInitializeParams ParamsForLoginKey;
 
 	/** Maximum number of local players */
-	int32 MaxNumberOfLocalPlayers;
+	int32 MaxNumberOfLocalPlayers = 0;
+	
+	/** True if this is a dedicated server, which doesn't require a LocalPlayer */
+	bool bIsDedicatedServer = false;
 
 	/** List of current in progress login requests */
 	TArray<TSharedRef<FUserLoginRequest>> ActiveLoginRequests;

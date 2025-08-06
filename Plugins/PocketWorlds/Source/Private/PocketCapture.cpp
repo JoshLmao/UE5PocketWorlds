@@ -7,16 +7,8 @@
 #include "Components/PrimitiveComponent.h"
 #include "Components/SceneCaptureComponent.h"
 #include "Components/SceneCaptureComponent2D.h"
-#include "Containers/EnumAsByte.h"
-#include "Containers/Set.h"
-#include "Containers/UnrealString.h"
-#include "Engine/Scene.h"
 #include "Engine/TextureRenderTarget2D.h"
-#include "HAL/Platform.h"
 #include "PocketCaptureSubsystem.h"
-#include "ShowFlags.h"
-#include "Templates/Casts.h"
-#include "UObject/ObjectPtr.h"
 
 #include UE_INLINE_GENERATED_CPP_BY_NAME(PocketCapture)
 

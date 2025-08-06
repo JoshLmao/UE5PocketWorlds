@@ -1,23 +1,23 @@
 // Copyright Epic Games, Inc. All Rights Reserved.
 
 #include "CommonUserSubsystem.h"
-#include "Engine/GameViewportClient.h"
-#include "Engine/Engine.h"
+#include "Engine/GameInstance.h"
 #include "Engine/LocalPlayer.h"
 #include "GameFramework/PlayerController.h"
 #include "GameFramework/PlayerState.h"
-#include "GenericPlatform/GenericPlatformInputDeviceMapper.h"
+#include "InputKeyEventArgs.h"
+#include "NativeGameplayTags.h"
 #include "TimerManager.h"
-#include "UObject/UObjectHash.h"
 
 #include UE_INLINE_GENERATED_CPP_BY_NAME(CommonUserSubsystem)
 
 #if COMMONUSER_OSSV1
-#include "OnlineSubsystem.h"
+#include "OnlineSubsystemNames.h"
 #include "OnlineSubsystemUtils.h"
 #else
 #include "Online/Auth.h"
 #include "Online/ExternalUI.h"
+#include "Online/OnlineResult.h"
 #include "Online/OnlineServices.h"
 #include "Online/OnlineServicesEngineUtils.h"
 #include "Online/Privileges.h"
@@ -115,6 +115,25 @@ void UCommonUserInfo::UpdateCachedNetId(const FUniqueNetIdRepl& NewId, ECommonUs
 	if (ensure(ContextCache))
 	{
 		ContextCache->CachedNetId = NewId;
+
+		// Update the nickname
+		const UCommonUserSubsystem* Subsystem = GetSubsystem();
+		if (ensure(Subsystem))
+		{
+			if (bIsGuest)
+			{
+				if (ContextCache->CachedNickname.IsEmpty())
+				{
+					// Set a default guest name if it is empty, can be changed with SetNickname
+					ContextCache->CachedNickname = NSLOCTEXT("CommonUser", "GuestNickname", "Guest").ToString();
+				}
+			}
+			else
+			{
+				// Refresh with the system nickname, overrides SetNickname
+				ContextCache->CachedNickname = Subsystem->GetLocalUserNickname(GetPlatformUserId(), Context);
+			}
+		}
 	}
 
 	// We don't merge the ids because of how guests work
@@ -123,6 +142,16 @@ void UCommonUserInfo::UpdateCachedNetId(const FUniqueNetIdRepl& NewId, ECommonUs
 class UCommonUserSubsystem* UCommonUserInfo::GetSubsystem() const
 {
 	return Cast<UCommonUserSubsystem>(GetOuter());
+}
+
+bool UCommonUserInfo::IsLoggedIn() const
+{
+	return (InitializationState == ECommonUserInitializationState::LoggedInLocalOnly || InitializationState == ECommonUserInitializationState::LoggedInOnline);
+}
+
+bool UCommonUserInfo::IsDoingLogin() const
+{
+	return (InitializationState == ECommonUserInitializationState::DoingInitialLogin || InitializationState == ECommonUserInitializationState::DoingNetworkLogin);
 }
 
 ECommonUserPrivilegeResult UCommonUserInfo::GetCachedPrivilegeResult(ECommonUserPrivilege Privilege, ECommonUserOnlineContext Context) const
@@ -242,37 +271,27 @@ FUniqueNetIdRepl UCommonUserInfo::GetNetId(ECommonUserOnlineContext Context) con
 	return FUniqueNetIdRepl();
 }
 
-FString UCommonUserInfo::GetNickname() const
+FString UCommonUserInfo::GetNickname(ECommonUserOnlineContext Context) const
 {
-	if (bIsGuest)
+	const FCachedData* FoundCached = GetCachedData(Context);
+
+	if (FoundCached)
 	{
-		return NSLOCTEXT("CommonUser", "GuestNickname", "Guest").ToString();
+		return FoundCached->CachedNickname;
 	}
 
-	const UCommonUserSubsystem* Subsystem = GetSubsystem();
-
-	if (ensure(Subsystem))
-	{
-#if COMMONUSER_OSSV1
-		IOnlineIdentity* Identity = Subsystem->GetOnlineIdentity(ECommonUserOnlineContext::Game);
-		if (ensure(Identity))
-		{
-			return Identity->GetPlayerNickname(GetPlatformUserIndex());
-		}
-#else
-		if (IAuthPtr AuthService = Subsystem->GetOnlineAuth(ECommonUserOnlineContext::Game))
-		{
-			if (TSharedPtr<FAccountInfo> AccountInfo = Subsystem->GetOnlineServiceAccountInfo(AuthService, GetPlatformUserId()))
-			{
-				if (const FSchemaVariant* DisplayName = AccountInfo->Attributes.Find(AccountAttributeData::DisplayName))
-				{
-					return DisplayName->GetString();
-				}
-			}
-		}
-#endif // COMMONUSER_OSSV1
-	}
+	// TODO maybe return unknown user here?
 	return FString();
+}
+
+void UCommonUserInfo::SetNickname(const FString& NewNickname, ECommonUserOnlineContext Context)
+{
+	FCachedData* ContextCache = GetCachedData(Context);
+
+	if (ensure(ContextCache))
+	{
+		ContextCache->CachedNickname = NewNickname;
+	}
 }
 
 FString UCommonUserInfo::GetDebugString() const
@@ -319,6 +338,9 @@ void UCommonUserSubsystem::Initialize(FSubsystemCollectionBase& Collection)
 	SetMaxLocalPlayers(4);
 
 	ResetUserState();
+
+	UGameInstance* GameInstance = GetGameInstance();
+	bIsDedicatedServer = GameInstance->IsDedicatedServerInstance();
 }
 
 void UCommonUserSubsystem::CreateOnlineContexts()
@@ -877,6 +899,30 @@ FUniqueNetIdRepl UCommonUserSubsystem::GetLocalUserNetId(FPlatformUserId Platfor
 	return FUniqueNetIdRepl();
 }
 
+FString UCommonUserSubsystem::GetLocalUserNickname(FPlatformUserId PlatformUser, ECommonUserOnlineContext Context) const
+{
+#if COMMONUSER_OSSV1
+	IOnlineIdentity* Identity = GetOnlineIdentity(Context);
+	if (ensure(Identity))
+	{
+		return Identity->GetPlayerNickname(GetPlatformUserIndexForId(PlatformUser));
+	}
+#else
+	if (IAuthPtr AuthService = GetOnlineAuth(Context))
+	{
+		if (TSharedPtr<FAccountInfo> AccountInfo = GetOnlineServiceAccountInfo(AuthService, PlatformUser))
+		{
+			if (const FSchemaVariant* DisplayName = AccountInfo->Attributes.Find(AccountAttributeData::DisplayName))
+			{
+				return DisplayName->GetString();
+			}
+		}
+	}
+#endif // COMMONUSER_OSSV1
+
+	return FString();
+}
+
 void UCommonUserSubsystem::SendSystemMessage(FGameplayTag MessageType, FText TitleText, FText BodyText)
 {
 	OnHandleSystemMessage.Broadcast(MessageType, TitleText, BodyText);
@@ -962,9 +1008,12 @@ bool UCommonUserSubsystem::TryToInitializeUser(FCommonUserInitializeParams Param
 {
 	if (Params.LocalPlayerIndex < 0 || (!Params.bCanCreateNewLocalPlayer && Params.LocalPlayerIndex >= GetNumLocalPlayers()))
 	{
-		UE_LOG(LogCommonUser, Error, TEXT("TryToInitializeUser %d failed with current %d and max %d, invalid index"), 
-			Params.LocalPlayerIndex, GetNumLocalPlayers(), GetMaxLocalPlayers());
-		return false;
+		if (!bIsDedicatedServer)
+		{
+			UE_LOG(LogCommonUser, Error, TEXT("TryToInitializeUser %d failed with current %d and max %d, invalid index"), 
+				Params.LocalPlayerIndex, GetNumLocalPlayers(), GetMaxLocalPlayers());
+			return false;
+		}
 	}
 
 	if (Params.LocalPlayerIndex > GetNumLocalPlayers() || Params.LocalPlayerIndex >= GetMaxLocalPlayers())
@@ -1097,7 +1146,7 @@ bool UCommonUserSubsystem::CancelUserInitialization(int32 LocalPlayerIndex)
 		return false;
 	}
 
-	if (LocalUserInfo->InitializationState != ECommonUserInitializationState::DoingInitialLogin && LocalUserInfo->InitializationState != ECommonUserInitializationState::DoingNetworkLogin)
+	if (!LocalUserInfo->IsDoingLogin())
 	{
 		return false;
 	}
@@ -1120,6 +1169,59 @@ bool UCommonUserSubsystem::CancelUserInitialization(int32 LocalPlayerIndex)
 	else
 	{
 		LocalUserInfo->InitializationState = ECommonUserInitializationState::FailedtoLogin;
+	}
+
+	return true;
+}
+
+bool UCommonUserSubsystem::TryToLogOutUser(int32 LocalPlayerIndex, bool bDestroyPlayer)
+{
+	UGameInstance* GameInstance = GetGameInstance();
+	
+	if (!ensure(GameInstance))
+	{
+		return false;
+	}
+
+	if (LocalPlayerIndex == 0 && bDestroyPlayer)
+	{
+		UE_LOG(LogCommonUser, Error, TEXT("TryToLogOutUser cannot destroy player 0"));
+		return false;
+	}
+
+	CancelUserInitialization(LocalPlayerIndex);
+	
+	UCommonUserInfo* LocalUserInfo = ModifyInfo(GetUserInfoForLocalPlayerIndex(LocalPlayerIndex));
+	if (!LocalUserInfo)
+	{
+		UE_LOG(LogCommonUser, Warning, TEXT("TryToLogOutUser failed to log out user %i because they are not logged in"), LocalPlayerIndex);
+		return false;
+	}
+
+	FPlatformUserId UserId = LocalUserInfo->PlatformUser;
+	if (IsRealPlatformUser(UserId))
+	{
+		// Currently this does not do platform logout in case they want to log back in immediately after
+		UE_LOG(LogCommonUser, Log, TEXT("TryToLogOutUser succeeded for real platform user %d"), UserId.GetInternalId());
+
+		LogOutLocalUser(UserId);
+	}
+	else if (ensure(LocalUserInfo->bIsGuest))
+	{
+		// For guest users just delete it
+		UE_LOG(LogCommonUser, Log, TEXT("TryToLogOutUser succeeded for guest player index %d"), LocalPlayerIndex);
+
+		LocalUserInfos.Remove(LocalPlayerIndex);
+	}
+
+	if (bDestroyPlayer)
+	{
+		ULocalPlayer* ExistingPlayer = GameInstance->FindLocalPlayerFromPlatformUserId(UserId);
+
+		if (ExistingPlayer)
+		{
+			GameInstance->RemoveLocalPlayer(ExistingPlayer);
+		}
 	}
 
 	return true;
@@ -1158,7 +1260,7 @@ bool UCommonUserSubsystem::OverrideInputKeyForLogin(FInputKeyEventArgs& EventArg
 	const UCommonUserInfo* MappedUser = GetUserInfoForInputDevice(EventArgs.InputDevice);
 	if (EventArgs.Event == IE_Pressed)
 	{
-		if (MappedUser == nullptr || MappedUser->InitializationState == ECommonUserInitializationState::Unknown || MappedUser->InitializationState == ECommonUserInitializationState::FailedtoLogin)
+		if (MappedUser == nullptr || !MappedUser->IsLoggedIn())
 		{
 			if (MappedUser)
 			{
@@ -1181,6 +1283,12 @@ bool UCommonUserSubsystem::OverrideInputKeyForLogin(FInputKeyEventArgs& EventArg
 			{
 				if (LoginKeysForAnyUser.Contains(EventArgs.Key))
 				{
+					// If we're in the middle of logging in just return true to ignore platform-specific input
+					if (MappedUser && MappedUser->IsDoingLogin())
+					{
+						return true;
+					}
+
 					// Press start screen
 					FCommonUserInitializeParams NewParams = ParamsForLoginKey;
 					NewParams.LocalPlayerIndex = NextLocalPlayerIndex;
@@ -1196,6 +1304,12 @@ bool UCommonUserSubsystem::OverrideInputKeyForLogin(FInputKeyEventArgs& EventArg
 				{
 					if (LoginKeysForNewUser.Contains(EventArgs.Key))
 					{
+						// If we're in the middle of logging in just return true to ignore platform-specific input
+						if (MappedUser && MappedUser->IsDoingLogin())
+						{
+							return true;
+						}
+
 						// Local multiplayer
 						FCommonUserInitializeParams NewParams = ParamsForLoginKey;
 						NewParams.LocalPlayerIndex = NextLocalPlayerIndex;
@@ -1206,12 +1320,6 @@ bool UCommonUserSubsystem::OverrideInputKeyForLogin(FInputKeyEventArgs& EventArg
 				}
 			}
 		}
-	}
-
-	if ((LoginKeysForAnyUser.Contains(EventArgs.Key) || LoginKeysForNewUser.Contains(EventArgs.Key))
-		&& (MappedUser == nullptr || MappedUser->InitializationState != ECommonUserInitializationState::LoggedInOnline))
-	{
-		return true;
 	}
 
 	if (WrappedInputKeyHandler.IsBound())
@@ -1270,7 +1378,7 @@ void UCommonUserSubsystem::HandleLoginForUserInitialize(const UCommonUserInfo* U
 		LocalUserInfo->bIsGuest = false;
 	}
 
-	ensure(LocalUserInfo->InitializationState == ECommonUserInitializationState::DoingInitialLogin || LocalUserInfo->InitializationState == ECommonUserInitializationState::DoingNetworkLogin);
+	ensure(LocalUserInfo->IsDoingLogin());
 
 	if (Error.IsSet())
 	{
@@ -1318,7 +1426,7 @@ void UCommonUserSubsystem::HandleUserInitializeFailed(FCommonUserInitializeParam
 	UE_LOG(LogCommonUser, Warning, TEXT("TryToInitializeUser %d failed with error %s"), LocalUserInfo->LocalPlayerIndex, *Error.ToString());
 
 	// If state is wrong, abort as we might have gotten canceled
-	if (!ensure(LocalUserInfo->InitializationState == ECommonUserInitializationState::DoingInitialLogin || LocalUserInfo->InitializationState == ECommonUserInitializationState::DoingNetworkLogin))
+	if (!ensure(LocalUserInfo->IsDoingLogin()))
 	{
 		return;
 	}
@@ -1357,7 +1465,7 @@ void UCommonUserSubsystem::HandleUserInitializeSucceeded(FCommonUserInitializePa
 	}
 
 	// If state is wrong, abort as we might have gotten cancelled
-	if (!ensure(LocalUserInfo->InitializationState == ECommonUserInitializationState::DoingInitialLogin || LocalUserInfo->InitializationState == ECommonUserInitializationState::DoingNetworkLogin))
+	if (!ensure(LocalUserInfo->IsDoingLogin()))
 	{
 		return;
 	}
@@ -1465,7 +1573,7 @@ void UCommonUserSubsystem::ProcessLoginRequest(TSharedRef<FUserLoginRequest> Req
 	}
 
 	// Check for overall success
-	if (CurrentStatus != ELoginStatusType::NotLoggedIn && CurrentId.IsValid())
+	if (bHasRequiredStatus && CurrentId.IsValid())
 	{
 		// Stall if we're waiting for the login UI to close
 		if (Request->LoginUIState == ECommonUserAsyncTaskState::InProgress)
@@ -1532,6 +1640,14 @@ void UCommonUserSubsystem::ProcessLoginRequest(TSharedRef<FUserLoginRequest> Req
 	{
 		Request->OverallLoginState = ECommonUserAsyncTaskState::Failed;
 	}
+	else if (Request->OverallLoginState == ECommonUserAsyncTaskState::InProgress &&
+		Request->LoginUIState != ECommonUserAsyncTaskState::InProgress &&
+		Request->AutoLoginState != ECommonUserAsyncTaskState::InProgress &&
+		Request->TransferPlatformAuthState != ECommonUserAsyncTaskState::InProgress)
+	{
+		// If none of the substates are still in progress but we haven't successfully logged in, mark this as a failure to avoid stalling forever
+		Request->OverallLoginState = ECommonUserAsyncTaskState::Failed;
+	}
 
 	if (Request->OverallLoginState == ECommonUserAsyncTaskState::Done)
 	{
@@ -1579,6 +1695,8 @@ void UCommonUserSubsystem::ProcessLoginRequest(TSharedRef<FUserLoginRequest> Req
 				Request->OverallLoginState = ECommonUserAsyncTaskState::NotStarted;
 				Request->PrivilegeCheckState = ECommonUserAsyncTaskState::NotStarted;
 				Request->TransferPlatformAuthState = ECommonUserAsyncTaskState::NotStarted;
+				Request->AutoLoginState = ECommonUserAsyncTaskState::NotStarted;
+				Request->LoginUIState = ECommonUserAsyncTaskState::NotStarted;
 
 				// Reprocess and immediately return
 				ProcessLoginRequest(Request);
@@ -1629,7 +1747,7 @@ void UCommonUserSubsystem::HandleUserLoginCompleted(int32 PlatformUserIndex, boo
 		PlatformUserIndex,
 		(int32)bWasSuccessful,
 		ELoginStatus::ToString(NewStatus),
-		*NetId.ToString(),
+		*NewId.ToString(),
 		*ErrorString);
 
 	// Update any waiting login requests
@@ -1682,10 +1800,18 @@ void UCommonUserSubsystem::HandleOnLoginUIClosed(TSharedPtr<const FUniqueNetId> 
 			continue;
 		}
 
-		if (UserInfo->PlatformUser == PlatformUser && Request->CurrentContext == Context && Request->LoginUIState == ECommonUserAsyncTaskState::InProgress)
+		// Look for first user trying to log in on this context
+		if (Request->CurrentContext == Context && Request->LoginUIState == ECommonUserAsyncTaskState::InProgress)
 		{
 			if (LoggedInNetId.IsValid() && LoggedInNetId->IsValid() && Error.WasSuccessful())
 			{
+				// The platform user id that actually logged in may not be the same one who requested the UI,
+				// so swap it if the returned id is actually valid
+				if (UserInfo->PlatformUser != PlatformUser && PlatformUser != PLATFORMUSERID_NONE)
+				{
+					UserInfo->PlatformUser = PlatformUser;
+				}
+
 				Request->LoginUIState = ECommonUserAsyncTaskState::Done;
 				Request->Error.Reset();
 			}
@@ -1824,10 +1950,18 @@ void UCommonUserSubsystem::HandleOnLoginUIClosedV2(const UE::Online::TOnlineResu
 			continue;
 		}
 
-		if (UserInfo->PlatformUser == PlatformUser && Request->CurrentContext == Context && Request->LoginUIState == ECommonUserAsyncTaskState::InProgress)
+		// Look for first user trying to log in on this context
+		if (Request->CurrentContext == Context && Request->LoginUIState == ECommonUserAsyncTaskState::InProgress)
 		{
 			if (Result.IsOk())
 			{
+				// The platform user id that actually logged in may not be the same one who requested the UI,
+				// so swap it if the returned id is actually valid
+				if (UserInfo->PlatformUser != PlatformUser && PlatformUser != PLATFORMUSERID_NONE)
+				{
+					UserInfo->PlatformUser = PlatformUser;
+				}
+
 				Request->LoginUIState = ECommonUserAsyncTaskState::Done;
 				Request->Error.Reset();
 			}
@@ -2252,7 +2386,7 @@ bool UCommonUserSubsystem::HasSeparatePlatformContext() const
 
 void UCommonUserSubsystem::SetLocalPlayerUserInfo(ULocalPlayer* LocalPlayer, const UCommonUserInfo* UserInfo)
 {
-	if (ensure(LocalPlayer && UserInfo))
+	if (!bIsDedicatedServer && ensure(LocalPlayer && UserInfo))
 	{
 		LocalPlayer->SetPlatformUserId(UserInfo->GetPlatformUserId());
 
@@ -2451,7 +2585,7 @@ void UCommonUserSubsystem::HandleControllerPairingChanged(int32 PlatformUserInde
 	ULocalPlayer* ControlledLocalPlayer = GameInstance->FindLocalPlayerFromPlatformUserId(PlatformUser);
 	ULocalPlayer* NewLocalPlayer = GameInstance->FindLocalPlayerFromUniqueNetId(NewUser.User);
 	const UCommonUserInfo* NewUserInfo = GetUserInfoForUniqueNetId(FUniqueNetIdRepl(NewUser.User));
-	const UCommonUserInfo* PreviousUserInfo = GetUserInfoForUniqueNetId(FUniqueNetIdRepl(NewUser.User));
+	const UCommonUserInfo* PreviousUserInfo = GetUserInfoForUniqueNetId(FUniqueNetIdRepl(PreviousUser.User));
 
 	// See if we think this is already bound to an existing player	
 	if (PreviousUser.ControllersRemaining == 0 && PreviousUserInfo && PreviousUserInfo != NewUserInfo)

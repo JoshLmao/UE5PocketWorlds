@@ -2,14 +2,12 @@
 
 #pragma once
 
-#include "Delegates/Delegate.h"
 #include "Math/BoxSphereBounds.h"
-#include "Math/MathFwd.h"
-#include "Misc/AssertionMacros.h"
-#include "UObject/Object.h"
-#include "UObject/UObjectGlobals.h"
 
+#include "UObject/ObjectPtr.h"
 #include "PocketLevelInstance.generated.h"
+
+class UPocketLevelSubsystem;
 
 class ULevelStreamingDynamic;
 class ULocalPlayer;

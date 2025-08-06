@@ -2,18 +2,12 @@
 
 #include "PocketLevelInstance.h"
 
-#include "Containers/Array.h"
 #include "Engine/Level.h"
 #include "Engine/LevelStreaming.h"
 #include "Engine/LevelStreamingDynamic.h"
 #include "Engine/LocalPlayer.h"
-#include "GameFramework/Actor.h"
 #include "GameFramework/PlayerController.h"
-#include "Math/Rotator.h"
-#include "Math/Sphere.h"
-#include "Math/Vector.h"
 #include "PocketLevel.h"
-#include "UObject/SoftObjectPtr.h"
 
 #include UE_INLINE_GENERATED_CPP_BY_NAME(PocketLevelInstance)
 
@@ -69,7 +63,7 @@ void UPocketLevelInstance::StreamOut()
 
 FDelegateHandle UPocketLevelInstance::AddReadyCallback(FPocketLevelInstanceEvent::FDelegate Callback)
 {
-	if (StreamingPocketLevel->GetCurrentState() == ULevelStreaming::ECurrentState::LoadedVisible)
+	if (StreamingPocketLevel->GetLevelStreamingState() == ELevelStreamingState::LoadedVisible)
 	{
 		Callback.ExecuteIfBound(this);
 	}

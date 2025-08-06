@@ -2,9 +2,7 @@
 
 #pragma once
 
-#include "Engine/EngineTypes.h"
 #include "GameFramework/Pawn.h"
-#include "UObject/UObjectGlobals.h"
 
 #include "ModularPawn.generated.h"
 

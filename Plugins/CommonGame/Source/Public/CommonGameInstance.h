@@ -2,14 +2,12 @@
 
 #pragma once
 
-#include "CommonUserTypes.h"
-#include "CoreTypes.h"
 #include "Engine/GameInstance.h"
-#include "GameplayTagContainer.h"
-#include "UObject/UObjectGlobals.h"
-#include "UObject/WeakObjectPtrTemplates.h"
 
 #include "CommonGameInstance.generated.h"
+
+enum class ECommonUserAvailability : uint8;
+enum class ECommonUserPrivilege : uint8;
 
 class FText;
 class UCommonUserInfo;
@@ -36,6 +34,9 @@ public:
 	UFUNCTION()
 	virtual void HandlePrivilegeChanged(const UCommonUserInfo* UserInfo, ECommonUserPrivilege Privilege, ECommonUserAvailability OldAvailability, ECommonUserAvailability NewAvailability);
 
+	UFUNCTION()
+	virtual void HandlerUserInitialized(const UCommonUserInfo* UserInfo, bool bSuccess, FText Error, ECommonUserPrivilege RequestedPrivilege, ECommonUserOnlineContext OnlineContext);
+
 	/** Call to reset user and session state, usually because a player has been disconnected */
 	virtual void ResetUserAndSessionState();
 
@@ -48,6 +49,9 @@ public:
 	 */
 	/** Handles user accepting a session invite from an external source (for example, a platform overlay). Intended to be overridden per game. */
 	virtual void OnUserRequestedSession(const FPlatformUserId& PlatformUserId, UCommonSession_SearchResult* InRequestedSession, const FOnlineResultInformation& RequestedSessionResult);
+
+	/** Handles OSS request that the session be destroyed */
+	virtual void OnDestroySessionRequested(const FPlatformUserId& PlatformUserId, const FName& SessionName);
 
 	/** Get the requested session */
 	UCommonSession_SearchResult* GetRequestedSession() const { return RequestedSession; }

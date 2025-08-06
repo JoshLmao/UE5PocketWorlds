@@ -2,18 +2,28 @@
 
 #pragma once
 
-#include "CoreMinimal.h"
-#include "Engine/GameInstance.h"
-#include "Subsystems/GameInstanceSubsystem.h"
-#include "UObject/StrongObjectPtr.h"
 #include "CommonUserTypes.h"
+#include "Subsystems/GameInstanceSubsystem.h"
+#include "UObject/ObjectPtr.h"
+#include "UObject/StrongObjectPtr.h"
+#include "UObject/PrimaryAssetId.h"
+#include "UObject/WeakObjectPtr.h"
+#include "PartyBeaconClient.h"
+#include "PartyBeaconHost.h"
+#include "PartyBeaconState.h"
+
+class APlayerController;
+class AOnlineBeaconHost;
+class ULocalPlayer;
+namespace ETravelFailure { enum Type : int; }
+struct FOnlineResultInformation;
 
 #if COMMONUSER_OSSV1
-#include "OnlineSubsystemTypes.h"
 #include "Interfaces/OnlineSessionInterface.h"
-#include "Public/OnlineSessionSettings.h"
+#include "OnlineSessionSettings.h"
 #else
 #include "Online/Lobbies.h"
+#include "Online/OnlineAsyncOpHandle.h"
 #endif // COMMONUSER_OSSV1
 
 #include "CommonSessionSubsystem.generated.h"
@@ -57,6 +67,14 @@ public:
 	UPROPERTY(BlueprintReadWrite, Category = Session)
 	bool bUseLobbies;
 
+	/** True if this request should create a lobby with enabled voice chat in available */
+	UPROPERTY(BlueprintReadWrite, Category = Session)
+	bool bUseLobbiesVoiceChat;
+
+	/** True if this request should create a session that will appear in the user's presence information */
+	UPROPERTY(BlueprintReadWrite, Category = Session)
+	bool bUsePresence;
+
 	/** String used during matchmaking to specify what type of game mode this is */
 	UPROPERTY(BlueprintReadWrite, Category=Session)
 	FString ModeNameForAdvertisement;
@@ -84,7 +102,7 @@ public:
 	virtual FString ConstructTravelURL() const;
 
 	/** Returns true if this request is valid, returns false and logs errors if it is not */
-	virtual bool ValidateAndLogErrors() const;
+	virtual bool ValidateAndLogErrors(FText& OutError) const;
 };
 
 
@@ -205,6 +223,35 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FCommonSessionOnJoinSessionComplete_
 DECLARE_MULTICAST_DELEGATE_OneParam(FCommonSessionOnCreateSessionComplete, const FOnlineResultInformation& /*Result*/);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FCommonSessionOnCreateSessionComplete_Dynamic, const FOnlineResultInformation&, Result);
 
+/**
+ * Event triggered when the local user has requested to destroy a session from an external source, for example from a platform overlay.
+ * The game should transition the player out of the session.
+ * @param LocalPlatformUserId the local user id that made the destroy request. This is a platform user id because the user might not be signed in yet.
+ * @param SessionName the name identifier for the session.
+ */
+DECLARE_MULTICAST_DELEGATE_TwoParams(FCommonSessionOnDestroySessionRequested, const FPlatformUserId& /*LocalPlatformUserId*/, const FName& /*SessionName*/);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FCommonSessionOnDestroySessionRequested_Dynamic, const FPlatformUserId&, LocalPlatformUserId, const FName&, SessionName);
+
+/**
+ * Event triggered when a session join has completed, after resolving the connect string and prior to the client traveling.
+ * @param URL resolved connection string for the session with any additional arguments
+ */
+DECLARE_MULTICAST_DELEGATE_OneParam(FCommonSessionOnPreClientTravel, FString& /*URL*/);
+
+/**
+ * Event triggered at different points in the session ecosystem that represent a user-presentable state of the session.
+ * This should not be used for online functionality (use OnCreateSessionComplete or OnJoinSessionComplete for those) but for features such as rich presence
+ */
+UENUM(BlueprintType)
+enum class ECommonSessionInformationState : uint8
+{
+	OutOfGame,
+	Matchmaking,
+	InGame
+};
+DECLARE_MULTICAST_DELEGATE_ThreeParams(FCommonSessionOnSessionInformationChanged, ECommonSessionInformationState /*SessionStatus*/, const FString& /*GameMode*/, const FString& /*MapName*/);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_ThreeParams(FCommonSessionOnSessionInformationChanged_Dynamic, ECommonSessionInformationState, SessionStatus, const FString&, GameMode, const FString&, MapName);
+
 //////////////////////////////////////////////////////////////////////
 // UCommonSessionSubsystem
 
@@ -213,7 +260,7 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FCommonSessionOnCreateSessionComplet
  * One subsystem is created for each game instance and can be accessed from blueprints or C++ code.
  * If a game-specific subclass exists, this base subsystem will not be created.
  */
-UCLASS()
+UCLASS(BlueprintType, Config=Engine)
 class COMMONUSER_API UCommonSessionSubsystem : public UGameInstanceSubsystem
 {
 	GENERATED_BODY()
@@ -274,6 +321,35 @@ public:
 	UPROPERTY(BlueprintAssignable, Category = "Events", meta = (DisplayName = "On Create Session Complete"))
 	FCommonSessionOnCreateSessionComplete_Dynamic K2_OnCreateSessionCompleteEvent;
 
+	/** Native Delegate when the presentable session information has changed */
+	FCommonSessionOnSessionInformationChanged OnSessionInformationChangedEvent;
+	/** Event broadcast when the presentable session information has changed */
+	UPROPERTY(BlueprintAssignable, Category = "Events", meta = (DisplayName = "On Session Information Changed"))
+	FCommonSessionOnSessionInformationChanged_Dynamic K2_OnSessionInformationChangedEvent;
+
+	/** Native Delegate when a platform session destroy has been requested */
+	FCommonSessionOnDestroySessionRequested OnDestroySessionRequestedEvent;
+	/** Event broadcast when a platform session destroy has been requested */
+	UPROPERTY(BlueprintAssignable, Category = "Events", meta = (DisplayName = "On Leave Session Requested"))
+	FCommonSessionOnDestroySessionRequested_Dynamic K2_OnDestroySessionRequestedEvent;
+
+	/** Native Delegate for modifying the connect URL prior to a client travel */
+	FCommonSessionOnPreClientTravel OnPreClientTravelEvent;
+
+	// Config settings, these can overridden in child classes or config files
+
+	/** Sets the default value of bUseLobbies for session search and host requests */
+	UPROPERTY(Config)
+	bool bUseLobbiesDefault = true;
+
+	/** Sets the default value of bUseLobbiesVoiceChat for session host requests */
+	UPROPERTY(Config)
+	bool bUseLobbiesVoiceChatDefault = false;
+
+	/** Enables reservation beacon flow prior to server travel when creating or joining a game session */ 
+	UPROPERTY(Config)
+	bool bUseBeacons = true;
+
 protected:
 	// Functions called during the process of creating or joining a session, these can be overidden for game-specific behavior
 
@@ -306,6 +382,9 @@ protected:
 	void NotifyUserRequestedSession(const FPlatformUserId& PlatformUserId, UCommonSession_SearchResult* RequestedSession, const FOnlineResultInformation& RequestedSessionResult);
 	void NotifyJoinSessionComplete(const FOnlineResultInformation& Result);
 	void NotifyCreateSessionComplete(const FOnlineResultInformation& Result);
+	void NotifySessionInformationUpdated(ECommonSessionInformationState SessionStatusStr, const FString& GameMode = FString(), const FString& MapName = FString());
+	void NotifyDestroySessionRequested(const FPlatformUserId& PlatformUserId, const FName& SessionName);
+	void SetCreateSessionError(const FText& ErrorText);
 
 #if COMMONUSER_OSSV1
 	void BindOnlineDelegatesOSSv1();
@@ -322,6 +401,7 @@ protected:
 	void OnUpdateSessionComplete(FName SessionName, bool bWasSuccessful);
 	void OnEndSessionComplete(FName SessionName, bool bWasSuccessful);
 	void OnDestroySessionComplete(FName SessionName, bool bWasSuccessful);
+	void OnDestroySessionRequested(int32 LocalUserNum, FName SessionName);
 	void OnFindSessionsComplete(bool bWasSuccessful);
 	void OnJoinSessionComplete(FName SessionName, EOnJoinSessionCompleteResult::Type Result);
 	void OnRegisterJoiningLocalPlayerComplete(const FUniqueNetId& PlayerId, EOnJoinSessionCompleteResult::Type Result);
@@ -346,16 +426,46 @@ protected:
 	UE::Online::FOnlineEventDelegateHandle LobbyJoinRequestedHandle;
 #endif // COMMONUSER_OSSV1
 
+	void CreateHostReservationBeacon();
+	void ConnectToHostReservationBeacon();
+	void DestroyHostReservationBeacon();
+
 protected:
 	/** The travel URL that will be used after session operations are complete */
 	FString PendingTravelURL;
 
+	/** Most recent result information for a session creation attempt, stored here to allow storing error codes for later */
+	FOnlineResultInformation CreateSessionResult;
+
 	/** True if we want to cancel the session after it is created */
 	bool bWantToDestroyPendingSession = false;
+
+	/** True if this is a dedicated server, which doesn't require a LocalPlayer to create a session */
+	bool bIsDedicatedServer = false;
 
 	/** Settings for the current search */
 	TSharedPtr<FCommonOnlineSearchSettings> SearchSettings;
 
-	/** Settings for the current host request */
-	TSharedPtr<FCommonSession_OnlineSessionSettings> HostSettings;
+	/** General beacon listener for registering beacons with */
+	UPROPERTY(Transient)
+	TWeakObjectPtr<AOnlineBeaconHost> BeaconHostListener;
+	/** State of the beacon host */
+	UPROPERTY(Transient)
+	TObjectPtr<UPartyBeaconState> ReservationBeaconHostState;
+	/** Beacon controlling access to this game. */
+	UPROPERTY(Transient)
+	TWeakObjectPtr<APartyBeaconHost> ReservationBeaconHost;
+	/** Common class object for beacon communication */
+	UPROPERTY(Transient)
+	TWeakObjectPtr<APartyBeaconClient> ReservationBeaconClient;
+
+	/** Number of teams for beacon reservation */
+	UPROPERTY(Config)
+	int32 BeaconTeamCount = 2;
+	/** Size of a team for beacon reservation */
+	UPROPERTY(Config)
+	int32 BeaconTeamSize = 8;
+	/** Max number of beacon reservations */
+	UPROPERTY(Config)
+	int32 BeaconMaxReservations = 16;
 };

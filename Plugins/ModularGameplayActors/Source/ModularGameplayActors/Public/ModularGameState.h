@@ -2,10 +2,7 @@
 
 #pragma once
 
-#include "Engine/EngineTypes.h"
 #include "GameFramework/GameState.h"
-#include "GameFramework/GameStateBase.h"
-#include "UObject/UObjectGlobals.h"
 
 #include "ModularGameState.generated.h"
 

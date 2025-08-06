@@ -2,17 +2,11 @@
 
 #pragma once
 
-#include "Containers/Array.h"
-#include "CoreTypes.h"
-#include "Engine/EngineTypes.h"
 #include "GameFramework/Actor.h"
-#include "Misc/AssertionMacros.h"
-#include "UObject/Object.h"
-#include "UObject/UObjectGlobals.h"
-#include "UObject/WeakObjectPtr.h"
-#include "UObject/WeakObjectPtrTemplates.h"
 
 #include "PocketCapture.generated.h"
+
+enum ESceneCaptureSource : int;
 
 class UMaterialInterface;
 class UPocketCaptureSubsystem;

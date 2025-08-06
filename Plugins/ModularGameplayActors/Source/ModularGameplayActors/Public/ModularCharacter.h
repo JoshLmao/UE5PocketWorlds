@@ -2,9 +2,7 @@
 
 #pragma once
 
-#include "Engine/EngineTypes.h"
 #include "GameFramework/Character.h"
-#include "UObject/UObjectGlobals.h"
 
 #include "ModularCharacter.generated.h"
 
