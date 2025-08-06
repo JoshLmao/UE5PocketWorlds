@@ -34,8 +34,8 @@ void APocketLevelStageManager::BeginPlay()
 	Super::BeginPlay();
 	
 	// Get capture subsystem and create the renderer
-	auto* pocketCaptureSubsys = GetWorld()->GetSubsystem<UPocketCaptureSubsystem>();
-	PocketCaptureInst = pocketCaptureSubsys->CreateThumbnailRenderer(PocketCaptureClass);
+	auto* PocketCaptureSubsystem = GetWorld()->GetSubsystem<UPocketCaptureSubsystem>();
+	PocketCaptureInst = PocketCaptureSubsystem->CreateThumbnailRenderer(PocketCaptureClass);
 	PocketCaptureInst->SetRenderTargetSize(1024, 2048);
 	// Configure all actors under this manager as things we want to capture
 	PocketCaptureInst->SetCaptureTarget(this);
@@ -46,17 +46,17 @@ UPocketCapture* APocketLevelStageManager::GetPocketCapture()
 	return PocketCaptureInst;
 }
 
-AActor* APocketLevelStageManager::SpawnActorInPocketLevel(TSubclassOf<AActor> ActorClassToSpawn, FActorSpawnParameters ActorSpawnParams)
+AActor* APocketLevelStageManager::SpawnActorInPocketLevel(const TSubclassOf<AActor>& ActorClassToSpawn, FActorSpawnParameters ActorSpawnParams)
 {
 	// Override owner as this manager
 	ActorSpawnParams.Owner = this;
 
 	// Spawn actor normally
-	auto* spawnedActor = GetWorld()->SpawnActor<AActor>(ActorClassToSpawn, ActorSpawnParams);
+	auto* SpawnedActor = GetWorld()->SpawnActor<AActor>(ActorClassToSpawn, ActorSpawnParams);
 	
 	// Attach to the manager's spawn point component so we render it
 	FAttachmentTransformRules attachRules(EAttachmentRule::SnapToTarget, true);
-	spawnedActor->AttachToComponent(ActorSpawnPointComponent, attachRules);
+	SpawnedActor->AttachToComponent(ActorSpawnPointComponent, attachRules);
 
-	return spawnedActor;
+	return SpawnedActor;
 }
