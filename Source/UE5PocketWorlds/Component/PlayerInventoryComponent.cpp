@@ -1,12 +1,12 @@
 #include "PlayerInventoryComponent.h"
 #include "Blueprint/UserWidget.h"
-#include "PrimaryGameLayout.h"
-#include "GameFramework/PlayerController.h"
-#include <UE5PocketWorlds/Player/PocketWorldsLocalPlayer.h>
 #include "CommonActivatableWidget.h"
-#include "UObject/ConstructorHelpers.h"
-#include "UE5PocketWorlds/UI/Foundation/FoundationBaseActivatable.h"
+#include "GameFramework/PlayerController.h"
+#include "PrimaryGameLayout.h"
 #include "UE5PocketWorlds/UE5PocketWorlds.h"
+#include "UE5PocketWorlds/UI/Foundation/FoundationBaseActivatable.h"
+#include "UObject/ConstructorHelpers.h"
+#include <UE5PocketWorlds/Player/PocketWorldsLocalPlayer.h>
 
 // Sets default values for this component's properties
 UPlayerInventoryComponent::UPlayerInventoryComponent()
@@ -32,14 +32,13 @@ bool UPlayerInventoryComponent::Open()
 		return false;
 	}
 
-	if (auto* localPlayer = Cast<UPocketWorldsLocalPlayer>(OwningPlayerController->GetLocalPlayer()))
+	if (const auto* LocalPlayer = Cast<UPocketWorldsLocalPlayer>(OwningPlayerController->GetLocalPlayer()))
 	{
-		if (auto* primaryLayout = localPlayer->GetRootUILayout())
+		if (auto* PrimaryGameLayout = LocalPlayer->GetRootUILayout())
 		{
-			auto layer = FGameplayTag::RequestGameplayTag("UI.Layer.GameMenu");
-			CreatedRoot = primaryLayout->PushWidgetToLayerStack<UFoundationBaseActivatable>(layer, InventoryRootWidget, [](UFoundationBaseActivatable& Activatable) {
-				UE_LOG(LogUIDebug, Log, TEXT("Inventory: Opened"));
-			});
+			const auto Layer = FGameplayTag::RequestGameplayTag("UI.Layer.GameMenu");
+			CreatedRoot = PrimaryGameLayout->PushWidgetToLayerStack<UFoundationBaseActivatable>(Layer, InventoryRootWidget, [](UFoundationBaseActivatable& Activatable)
+																								{ UE_LOG(LogUIDebug, Log, TEXT("Inventory: Opened")); });
 			InventoryDeactivatedHandle = CreatedRoot->OnDeactivated().AddUObject(this, &UPlayerInventoryComponent::OnInventoryClosed);
 			return true;
 		}
