@@ -2,11 +2,11 @@
 
 #pragma once
 
-#include "Engine/EngineTypes.h"
 #include "GameFramework/PlayerState.h"
-#include "UObject/UObjectGlobals.h"
 
 #include "ModularPlayerState.generated.h"
+
+namespace EEndPlayReason { enum Type : int; }
 
 class UObject;
 

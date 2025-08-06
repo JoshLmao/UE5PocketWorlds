@@ -2,10 +2,7 @@
 
 #pragma once
 
-#include "Containers/Array.h"
-#include "Math/MathFwd.h"
 #include "Subsystems/WorldSubsystem.h"
-#include "UObject/UObjectGlobals.h"
 
 #include "PocketLevelSystem.generated.h"
 

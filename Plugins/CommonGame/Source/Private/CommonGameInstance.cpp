@@ -6,23 +6,11 @@
 #include "CommonSessionSubsystem.h"
 #include "CommonUISettings.h"
 #include "CommonUserSubsystem.h"
-#include "Containers/UnrealString.h"
-#include "Delegates/Delegate.h"
-#include "Engine/LocalPlayer.h"
 #include "GameUIManagerSubsystem.h"
-#include "GameplayTagContainer.h"
 #include "ICommonUIModule.h"
-#include "Internationalization/Text.h"
 #include "LogCommonGame.h"
-#include "Logging/LogCategory.h"
-#include "Logging/LogMacros.h"
 #include "Messaging/CommonGameDialog.h"
 #include "Messaging/CommonMessagingSubsystem.h"
-#include "Misc/AssertionMacros.h"
-#include "NativeGameplayTags.h"
-#include "Templates/Casts.h"
-#include "Trace/Detail/Channel.h"
-#include "UObject/WeakObjectPtr.h"
 
 #include UE_INLINE_GENERATED_CPP_BY_NAME(CommonGameInstance)
 
@@ -54,6 +42,11 @@ void UCommonGameInstance::HandlePrivilegeChanged(const UCommonUserInfo* UserInfo
 		// TODO: Games can do something specific in subclass
 		// ReturnToMainMenu();
 	}
+}
+
+void UCommonGameInstance::HandlerUserInitialized(const UCommonUserInfo* UserInfo, bool bSuccess, FText Error, ECommonUserPrivilege RequestedPrivilege, ECommonUserOnlineContext OnlineContext)
+{
+	// Subclasses can override this
 }
 
 int32 UCommonGameInstance::AddLocalPlayer(ULocalPlayer* NewPlayer, FPlatformUserId UserId)
@@ -99,12 +92,14 @@ void UCommonGameInstance::Init()
 		UserSubsystem->SetTraitTags(PlatformTraits);
 		UserSubsystem->OnHandleSystemMessage.AddDynamic(this, &UCommonGameInstance::HandleSystemMessage);
 		UserSubsystem->OnUserPrivilegeChanged.AddDynamic(this, &UCommonGameInstance::HandlePrivilegeChanged);
+		UserSubsystem->OnUserInitializeComplete.AddDynamic(this, &UCommonGameInstance::HandlerUserInitialized);
 	}
 
 	UCommonSessionSubsystem* SessionSubsystem = GetSubsystem<UCommonSessionSubsystem>();
 	if (ensure(SessionSubsystem))
 	{
 		SessionSubsystem->OnUserRequestedSessionEvent.AddUObject(this, &UCommonGameInstance::OnUserRequestedSession);
+		SessionSubsystem->OnDestroySessionRequestedEvent.AddUObject(this, &UCommonGameInstance::OnDestroySessionRequested);
 	}
 }
 
@@ -141,6 +136,15 @@ void UCommonGameInstance::OnUserRequestedSession(const FPlatformUserId& Platform
 	{
 		HandleSystemMessage(FCommonUserTags::SystemMessage_Error, NSLOCTEXT("CommonGame", "Warning_RequestedSessionFailed", "Requested Session Failed"), RequestedSessionResult.ErrorText);
 	}
+}
+
+void UCommonGameInstance::OnDestroySessionRequested(const FPlatformUserId& PlatformUserId, const FName& SessionName)
+{
+	// When a session destroy is requested, please make sure that your project is in the right state to destroy the session and transition out of it
+
+	UE_LOG(LogCommonGame, Verbose, TEXT("[%hs] PlatformUserId:%d, SessionName: %s)"), __FUNCTION__, PlatformUserId.GetInternalId(), *SessionName.ToString());
+
+	ReturnToMainMenu();
 }
 
 void UCommonGameInstance::SetRequestedSession(UCommonSession_SearchResult* InRequestedSession)

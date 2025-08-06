@@ -2,14 +2,12 @@
 
 #pragma once
 
-#include "Containers/Array.h"
 #include "Containers/Ticker.h"
 #include "Subsystems/WorldSubsystem.h"
-#include "Templates/SubclassOf.h"
-#include "UObject/UObjectGlobals.h"
-#include "UObject/WeakObjectPtrTemplates.h"
 
 #include "PocketCaptureSubsystem.generated.h"
+
+template <typename T> class TSubclassOf;
 
 class FSubsystemCollectionBase;
 class UObject;

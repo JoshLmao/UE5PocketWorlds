@@ -3,10 +3,6 @@
 #pragma once
 
 #include "Engine/DataAsset.h"
-#include "Math/MathFwd.h"
-#include "Math/Vector.h"
-#include "UObject/SoftObjectPtr.h"
-#include "UObject/UObjectGlobals.h"
 
 #include "PocketLevel.generated.h"
 
