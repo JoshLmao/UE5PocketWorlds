@@ -18,18 +18,18 @@ UCLASS()
 class UE5POCKETWORLDS_API UPocketLevelBridgeSubsystem : public UWorldSubsystem
 {
 	GENERATED_BODY()
-	
+
 public:
 	// Spawns the given pocket level
-	void SpawnPocketLevel(class ULocalPlayer* OwningLocalPlayer, class UIdentifyingPocketLevel* PocketLevelDefintion, FVector SpawnLocation);
+	void SpawnPocketLevel(class ULocalPlayer* OwningLocalPlayer, class UIdentifyingPocketLevel* PocketLevelDefintion, const FVector& SpawnLocation);
 
-	void StreamInLevel(FGameplayTag LevelIdentifier);
-	void StreamOutLevel(FGameplayTag LevelIdentifier);
+	void StreamInLevel(const struct FGameplayTag& LevelIdentifier);
+	void StreamOutLevel(const struct FGameplayTag& LevelIdentifier);
 
 	// Gets the stage manager for the created pocket level
-	class APocketLevelStageManager* GetStageManager(FGameplayTag PocketLevelGameplayTag);
+	class APocketLevelStageManager* GetStageManager(const struct FGameplayTag& PocketLevelGameplayTag);
 	// Gets the PocketLevelInstance for the created pocket level
-	class UPocketLevelInstance* GetPocketLevelInstance(FGameplayTag PocketLevelGameplayTag);
+	class UPocketLevelInstance* GetPocketLevelInstance(const struct FGameplayTag& PocketLevelGameplayTag);
 
 private:
 	// Cache of identifying gameplay tag to created pocket world instances
