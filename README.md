@@ -4,6 +4,8 @@ This repo contains an example project on how to use `CommonUI` and `PocketWorlds
 
 The project has been updated from 5.1, and currently works and tested with Unreal Engine 5.5.4
 
+![preview of repository and pocket world](./repo-media/repo-preview.gif)
+
 ## How to: CommonUI
 
 For CommonUI to work, the project imports CommonGame and copied over functionality from Lyra class where needed.
