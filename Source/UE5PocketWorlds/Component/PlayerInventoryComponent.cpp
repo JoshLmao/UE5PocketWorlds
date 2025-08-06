@@ -12,7 +12,7 @@
 UPlayerInventoryComponent::UPlayerInventoryComponent()
 {
 	static ConstructorHelpers::FClassFinder<UFoundationBaseActivatable> CustomRootInventoryWidget(TEXT("/Game/PocketWorlds/UI/Inventory/WBP_InventoryRoot_Activatable"));
-	if (CustomRootInventoryWidget.Class != NULL)
+	if (IsValid(CustomRootInventoryWidget.Class))
 	{
 		InventoryRootWidget = CustomRootInventoryWidget.Class;
 	}
@@ -27,7 +27,7 @@ void UPlayerInventoryComponent::BeginPlay()
 
 bool UPlayerInventoryComponent::Open()
 {
-	if (CreatedRoot != nullptr)
+	if (IsValid(CreatedRoot))
 	{
 		return false;
 	}
