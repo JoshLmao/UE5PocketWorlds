@@ -31,14 +31,15 @@ public:
 	FGameplayTag IdentifyingGameplayTag;
 
 	// Active pocket capture instance for this pocket level
+	UPROPERTY()
 	class UPocketCapture* PocketCaptureInst;
 
 	// Gets the active UPocketCapture instance for this PocketLevel
 	UFUNCTION(BlueprintCallable)
-	UPocketCapture* GetPocketCapture();
+	class UPocketCapture* GetPocketCapture();
 
 	// Spawns a given actor in the pocket level
-	AActor* SpawnActorInPocketLevel(TSubclassOf<AActor> ActorClassToSpawn, FActorSpawnParameters ActorSpawnParams);
+	AActor* SpawnActorInPocketLevel(const TSubclassOf<AActor>& ActorClassToSpawn, FActorSpawnParameters ActorSpawnParams);
 private:
 	// Custom root component, scene component
 	UPROPERTY(VisibleAnywhere)

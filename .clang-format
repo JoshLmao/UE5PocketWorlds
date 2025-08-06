@@ -1,49 +1,54 @@
-StatementMacros: ['UPROPERTY', 'UFUNCTION', 'UCLASS', 'USTRUCT', 'UENUM', 'UINTERFACE', 'GENERATED_BODY']
-Language: Cpp
+# Based on the LLVM style with custom settings for Unreal Engine
 BasedOnStyle: LLVM
-
-AccessModifierOffset: -4
-AlignAfterOpenBracket: DontAlign
-AlignEscapedNewlines: Left
-AlignOperands: DontAlign
-AlignTrailingComments: true
-AllowShortBlocksOnASingleLine: Empty
-AllowShortEnumsOnASingleLine: false
-AllowShortFunctionsOnASingleLine: Inline
-AllowShortLambdasOnASingleLine: All
-BraceWrapping:
-  AfterCaseLabel: true
-  AfterClass: true
-  AfterControlStatement: true
-  AfterEnum: true
-  AfterFunction: true
-  AfterNamespace: true
-  AfterObjCDeclaration: true
-  AfterStruct: true
-  AfterUnion: true
-  AfterExternBlock: true
-  BeforeCatch: true
-  BeforeElse: true
-  BeforeLambdaBody: false
-  BeforeWhile: true
-  IndentBraces: false
-BreakBeforeBinaryOperators: NonAssignment
-BreakBeforeBraces: Custom
-BreakInheritanceList: AfterColon
-BreakBeforeTernaryOperators: true
-BreakConstructorInitializers: BeforeComma
-BreakStringLiterals: false
-ColumnLimit: 0
-ConstructorInitializerAllOnOneLineOrOnePerLine: true
-Cpp11BracedListStyle: false
-EmptyLineBeforeAccessModifier: LogicalBlock
-IndentCaseBlocks: false
-IndentCaseLabels: true
-IndentPPDirectives: BeforeHash
 IndentWidth: 4
-NamespaceIndentation: All
-PointerAlignment: Left
-SortIncludes: false
-SpaceBeforeCaseColon: false
 TabWidth: 4
 UseTab: Always
+BreakBeforeBraces: Allman
+AllowShortFunctionsOnASingleLine: Empty
+ColumnLimit: 180 # How many characters before the code wraps onto another line
+ConstructorInitializerAllOnOneLineOrOnePerLine: true
+IndentCaseLabels: true
+IndentPPDirectives: None
+SortIncludes: "CaseSensitive"
+AlwaysBreakTemplateDeclarations: Yes
+PenaltyExcessCharacter: 100
+PenaltyBreakBeforeFirstCallParameter: 19
+SpacesInParentheses: false
+SpaceAfterCStyleCast: true
+SpaceBeforeParens: ControlStatements
+Cpp11BracedListStyle: false
+SpaceBeforeRangeBasedForLoopColon: true
+ReflowComments: false
+PointerAlignment: Left
+DerivePointerAlignment: false
+IndentWrappedFunctionNames: false
+AlignConsecutiveAssignments: false
+AlignEscapedNewlines: Left
+AlignOperands: false
+AlignTrailingComments: true
+AllowAllArgumentsOnNextLine: true
+AllowAllConstructorInitializersOnNextLine: true
+AllowShortBlocksOnASingleLine: false
+AllowShortCaseLabelsOnASingleLine: false
+AllowShortIfStatementsOnASingleLine: false
+AllowShortLoopsOnASingleLine: false
+AlwaysBreakAfterDefinitionReturnType: None
+AlwaysBreakBeforeMultilineStrings: false
+BreakBeforeTernaryOperators: true
+BreakAfterJavaFieldAnnotations: false
+BreakStringLiterals: false
+CompactNamespaces: false
+KeepEmptyLinesAtTheStartOfBlocks: false
+MaxEmptyLinesToKeep: 1
+NamespaceIndentation: None
+PenaltyBreakComment: 300
+PenaltyBreakFirstLessLess: 120
+PenaltyBreakString: 1000
+PenaltyReturnTypeOnItsOwnLine: 60
+SpaceBeforeCaseColon: false
+SpaceInEmptyParentheses: false
+SpacesBeforeTrailingComments: 1
+Standard: Cpp11
+UseCRLF: false
+SpaceBeforeAssignmentOperators: true
+AccessModifierOffset: -4

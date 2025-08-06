@@ -1,29 +1,28 @@
 #include "PocketLevelBridgeSubsystem.h"
-#include "PocketLevelSystem.h"
-#include "PocketLevel.h"
-#include "Engine/World.h"
 #include "Engine/LocalPlayer.h"
-#include "UE5PocketWorlds/Worlds/IdentifyingPocketLevel.h"
-#include "PocketLevelInstance.h"
+#include "Engine/World.h"
 #include "Kismet/GameplayStatics.h"
+#include "PocketLevel.h"
+#include "PocketLevelInstance.h"
+#include "PocketLevelSystem.h"
+#include "UE5PocketWorlds/Worlds/IdentifyingPocketLevel.h"
 #include "UE5PocketWorlds/Worlds/PocketLevelStageManager.h"
 
-void UPocketLevelBridgeSubsystem::SpawnPocketLevel(ULocalPlayer* OwningLocalPlayer, UIdentifyingPocketLevel* PocketLevelDefinition, FVector SpawnLocation)
+void UPocketLevelBridgeSubsystem::SpawnPocketLevel(ULocalPlayer* OwningLocalPlayer, UIdentifyingPocketLevel* PocketLevelDefinition, const FVector& SpawnLocation)
 {
-	auto* pocketLevelInstance = GetWorld()->GetSubsystem<UPocketLevelSubsystem>()->GetOrCreatePocketLevelFor(OwningLocalPlayer, PocketLevelDefinition, SpawnLocation);
-
-	SpawnedLevelsMap.Add(PocketLevelDefinition->IdentifingGameplayTag, pocketLevelInstance);
+	auto* PocketLevelInstance = GetWorld()->GetSubsystem<UPocketLevelSubsystem>()->GetOrCreatePocketLevelFor(OwningLocalPlayer, PocketLevelDefinition, SpawnLocation);
+	SpawnedLevelsMap.Add(PocketLevelDefinition->IdentifingGameplayTag, PocketLevelInstance);
 }
 
-void UPocketLevelBridgeSubsystem::StreamInLevel(FGameplayTag PocketLevelGameplayTag)
+void UPocketLevelBridgeSubsystem::StreamInLevel(const FGameplayTag& PocketLevelGameplayTag)
 {
-	if (auto pocketlevelInstance = SpawnedLevelsMap.FindChecked(PocketLevelGameplayTag))
+	if (auto PocketLevelInstance = SpawnedLevelsMap.FindChecked(PocketLevelGameplayTag))
 	{
-		pocketlevelInstance->StreamIn();
+		PocketLevelInstance->StreamIn();
 	}
 }
 
-void UPocketLevelBridgeSubsystem::StreamOutLevel(FGameplayTag PocketLevelGameplayTag)
+void UPocketLevelBridgeSubsystem::StreamOutLevel(const FGameplayTag& PocketLevelGameplayTag)
 {
 	if (auto* pocketlevelInstance = SpawnedLevelsMap.FindChecked(PocketLevelGameplayTag))
 	{
@@ -31,21 +30,22 @@ void UPocketLevelBridgeSubsystem::StreamOutLevel(FGameplayTag PocketLevelGamepla
 	}
 }
 
-APocketLevelStageManager* UPocketLevelBridgeSubsystem::GetStageManager(FGameplayTag PocketLevelGameplayTag)
+APocketLevelStageManager* UPocketLevelBridgeSubsystem::GetStageManager(const FGameplayTag& PocketLevelGameplayTag)
 {
-	auto* pocketlevelInstance = GetPocketLevelInstance(PocketLevelGameplayTag);
+	const auto* PocketLevelInstance = GetPocketLevelInstance(PocketLevelGameplayTag);
 
 	// @todo improvement
-	// Able to get streaming level from pocketlevelInstance and get spawned manager actor from that
-	TArray<AActor*> outStageManagerActors;
-	UGameplayStatics::GetAllActorsOfClass(pocketlevelInstance->GetWorld(), APocketLevelStageManager::StaticClass(), outStageManagerActors);
-	for (auto stageManagerActor : outStageManagerActors)
+	// Able to get streaming level from PocketLevelInstance and get spawned manager actor from that
+	TArray<AActor*> OutStageManagerActors;
+	UGameplayStatics::GetAllActorsOfClass(PocketLevelInstance->GetWorld(), APocketLevelStageManager::StaticClass(), OutStageManagerActors);
+	for (auto StageManagerActor : OutStageManagerActors)
+
 	{
-		if (auto stageManager = Cast<APocketLevelStageManager>(stageManagerActor))
+		if (auto StageManager = Cast<APocketLevelStageManager>(StageManagerActor))
 		{
-			if (stageManager->IdentifyingGameplayTag.MatchesTag(PocketLevelGameplayTag))
+			if (StageManager->IdentifyingGameplayTag.MatchesTag(PocketLevelGameplayTag))
 			{
-				return stageManager;
+				return StageManager;
 			}
 		}
 	}
@@ -53,7 +53,7 @@ APocketLevelStageManager* UPocketLevelBridgeSubsystem::GetStageManager(FGameplay
 	return nullptr;
 }
 
-UPocketLevelInstance* UPocketLevelBridgeSubsystem::GetPocketLevelInstance(FGameplayTag PocketLevelGameplayTag)
+UPocketLevelInstance* UPocketLevelBridgeSubsystem::GetPocketLevelInstance(const FGameplayTag& PocketLevelGameplayTag)
 {
 	return SpawnedLevelsMap.FindChecked(PocketLevelGameplayTag);
 }

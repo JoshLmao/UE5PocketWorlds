@@ -33,9 +33,10 @@ protected:
 
 private:
 	// Capture instance
+	UPROPERTY()
 	class UPocketCapture* PocketCaptureInstance;
 
-	void CaptureFrame();
+	void CaptureFrame() const;
 
 	UFUNCTION()
 	void OnInventoryLevelReady(class UPocketLevelInstance* Instance);
