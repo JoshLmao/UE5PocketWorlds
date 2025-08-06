@@ -1,14 +1,13 @@
 #include "UW_CharacterRepresentation.h"
 #include "Components/Image.h"
-#include "Materials/Material.h"
-#include "PocketLevelSystem.h"
-#include "PocketLevelInstance.h"
-#include "PocketCapture.h"
-#include "UE5PocketWorlds/Worlds/PocketLevelStageManager.h"
-#include "Materials/MaterialInstanceDynamic.h"
 #include "Engine/Texture2D.h"
 #include "Engine/TextureRenderTarget2D.h"
+#include "Materials/Material.h"
+#include "Materials/MaterialInstanceDynamic.h"
+#include "PocketCapture.h"
+#include "PocketLevelInstance.h"
 #include "UE5PocketWorlds/Subsystem/PocketLevelBridgeSubsystem.h"
+#include "UE5PocketWorlds/Worlds/PocketLevelStageManager.h"
 
 void UUW_CharacterRepresentation::NativePreConstruct()
 {
@@ -16,7 +15,7 @@ void UUW_CharacterRepresentation::NativePreConstruct()
 
 	if (RenderImage != nullptr)
 	{
-		RenderImage->SetBrushFromMaterial(CameraRenderMaterial);	
+		RenderImage->SetBrushFromMaterial(CameraRenderMaterial);
 	}
 }
 
@@ -27,11 +26,11 @@ void UUW_CharacterRepresentation::NativeConstruct()
 	// Obtain pocket level instance for inventory
 	const auto PocketLevelBridgeSubsystem = GetWorld()->GetSubsystem<UPocketLevelBridgeSubsystem>();
 	auto* InventoryLevelInstance = PocketLevelBridgeSubsystem->GetPocketLevelInstance(InventoryPocketWorldGameplayTag);
-	
+
 	// Add callback to when streamed in level is ready
 	const auto ReadyDelegate = FPocketLevelInstanceEvent::FDelegate::CreateUObject(this, &UUW_CharacterRepresentation::OnInventoryLevelReady);
 	PocketLevelReadyDelegateHandle = InventoryLevelInstance->AddReadyCallback(ReadyDelegate);
-	
+
 	// Begin stream in process
 	InventoryLevelInstance->StreamIn();
 }
@@ -69,7 +68,7 @@ void UUW_CharacterRepresentation::CaptureFrame() const
 void UUW_CharacterRepresentation::OnInventoryLevelReady(UPocketLevelInstance* Instance)
 {
 	const auto PocketLevelBridgeSubsystem = GetWorld()->GetSubsystem<UPocketLevelBridgeSubsystem>();
-	
+
 	// Get stage manager for the instance
 	APocketLevelStageManager* PocketLevelStageManager = PocketLevelBridgeSubsystem->GetStageManager(InventoryPocketWorldGameplayTag);
 	check(PocketLevelStageManager != nullptr && "Unable to find pocket world stage manager");
