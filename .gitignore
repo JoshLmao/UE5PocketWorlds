@@ -357,3 +357,6 @@ Binaries/
 Plugins/**/Intermediate/*
 Plugins/**/Binaries/*
 enc_temp_folder/*
+
+# Rider
+.idea
